@@ -539,6 +539,7 @@ async function syncToSheets(){
   }
 }
 
+// --- 找到這個函數並覆蓋 ---
 async function loadFromSheets() {
   if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID_HERE")) {
     setSyncStatus('offline', '未設定 API 網址，僅顯示本機數據');
@@ -551,7 +552,16 @@ async function loadFromSheets() {
     
     const data = await resp.json();
     if (data.status === 'success' && data.records && data.records.length > 0) {
-        data.records.forEach(r => { db[r.date+'_'+r.store] = r; });
+        data.records.forEach(r => {
+            // ✨ 關鍵修正：處理從雲端抓下來的 ISO 日期字串
+            let cleanDate = r.date;
+            if (typeof cleanDate === 'string' && cleanDate.includes('T')) {
+                // 如果是 2026-04-05T16:00... 格式，只取前 10 個字並把 - 換成 /
+                cleanDate = cleanDate.split('T')[0].replace(/-/g, '/');
+            }
+            r.date = cleanDate; // 更新回資料物件中
+            db[cleanDate + '_' + r.store] = r;
+        });
         saveDB();
         renderOv(); renderDSel(); renderPromo();
         setSyncStatus('online', '已載入最新雲端數據');
