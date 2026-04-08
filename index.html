@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
-/* 完全沿用您的原始樣式，絕不改動版面 */
+/* ====== 完全沿用您的原始樣式，絕不改動 ====== */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
@@ -85,7 +85,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .pgap{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:3px;}
 .pontrack{font-size:12px;color:#3a9d65;}
 
-/* 隱藏在底層的新增功能樣式（不干擾原版面） */
+/* ====== 隱藏在底層的新增功能樣式（不干擾原版面） ====== */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: opacity 0.2s; padding: 4px; border-radius: 4px; }
 #sync-status:hover { opacity: 0.7; background: #e0dfd7; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -93,6 +93,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
+
 .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
 .modal-content { background:#fff; width:90%; max-width:350px; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 .modal-content input[type="number"] { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:12px; }
@@ -197,7 +198,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 
 <script>
 // --- 全域變數 ---
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxZ_bvknBdryeIWtcUySNt3Y4Zww3IxWx5xA6Xnv5kZfm3l8Xakc3csTTBGY8RdgsfQTA/exec";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwV6Gq_x_F3uAxUJAcWD9I-JIh6otK8kQ8R-PwoN2qedk22MlInZ6XfUpuqLPl0TNLG9A/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
 let db={}, tgts=Object.assign({},DEF_TGTS);
@@ -221,11 +222,12 @@ try {
 function saveDB(){ try{localStorage.setItem('musashi_db',JSON.stringify(db));}catch(e){} }
 function saveTgtsLS(){ try{localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}catch(e){} }
 
-// 解析文字
+// 正規化替換全形與無用字元，為解析做準備
 function norm(t){
   return t.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[\u200B\u200C\u200D\uFEFF]/g,'').replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats').replace(/Uber\s*Eats/gi,'UberEats').replace(/Uber\s*Eat\b/gi,'UberEats').replace(/《Foodpanda》/g,'Foodpanda').replace(/《UBER》/gi,'UberEats');
 }
 
+// 解析日期 (自動消除所有空白，處理「4月 6日」)
 function parseDate(raw){
   raw = (raw||'').replace(/\s+/g, '').replace(/：/g,':'); 
   let m = raw.match(/(\d{1,2})[月\/](\d{1,2})/);
@@ -250,30 +252,32 @@ function getNum(text,pats){
   return 0;
 }
 
+// ✨ 終極切割邏輯：完全不看時間戳記，只認「日期：」這兩個字作為新報表的開頭
 function splitBlocks(text){
-  text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-  const lines=text.split('\n');
-  const blocks=[];
-  let cur=[];
+  const normalizedText = norm(text);
+  const lines = normalizedText.split('\n');
+  const blocks = [];
+  let cur = [];
   for(const ln of lines){
-    const t=ln.trim();
-    if(/^\d{4}\.\d{2}\.\d{2}/.test(t)) continue;
-    if(/已收回訊息/.test(t)) continue;
-    const isTimestamp=/^\d{1,2}:\d{2}\s+\S/.test(t) && !/^店名\s*[:：]/.test(t) && !/^日期\s*[:：]/.test(t);
-    if(isTimestamp){
-      if(cur.length>0){blocks.push(cur.join('\n'));cur=[];}
-      continue;
+    const t = ln.trim();
+    // 只要看到這行開頭是 "日期:"，就立刻把前面的內容切斷包裝成一塊
+    if(/^日期\s*:/.test(t)){
+      if(cur.length > 0){
+        blocks.push(cur.join('\n'));
+        cur = [];
+      }
     }
     cur.push(ln);
   }
-  if(cur.length>0) blocks.push(cur.join('\n'));
-  return blocks.filter(b=>/店名\s*[:：]/.test(b)&&/當日業績\s*[:：]/.test(b));
+  if(cur.length > 0) blocks.push(cur.join('\n'));
+  
+  // 過濾出真正有店名跟業績的有效區塊
+  return blocks.filter(b => /店名\s*:/.test(b) && /當日業績\s*:/.test(b));
 }
 
-function parseBlock(raw){
-  const text=norm(raw);
-  const dRaw=(text.match(/日期\s*[:：]\s*([^\n]+)/)||[])[1];
-  const sRaw=(text.match(/店名\s*[:：]\s*([^\n]+)/)||[])[1];
+function parseBlock(text){
+  const dRaw=(text.match(/日期\s*:\s*([^\n]+)/)||[])[1];
+  const sRaw=(text.match(/店名\s*:\s*([^\n]+)/)||[])[1];
   if(!dRaw||!sRaw) return null;
   
   const date=parseDate(dRaw);
@@ -290,35 +294,45 @@ function parseBlock(raw){
   const uBlock=uIdx>=0?text.slice(uIdx,pIdx>uIdx?pIdx:uIdx+300):'';
   const pBlock=pIdx>=0?text.slice(pIdx,pIdx+250):'';
   
-  return{
+  return {
     date,store, hasPromo, hasLimited,
-    totalOrders:getNum(text,[/當日筆數\s*[:]\s*(\d+)/]),
-    dailyRev:getNum(text,[/當日業績\s*[:]\s*(\d+)/]),
-    monthRev:getNum(text,[/當月累計業績\s*[:]\s*(\d+)/]),
-    dineInOrders:getNum(text,[/內用筆數\s*[:]\s*(\d+)/]),
-    dineInPeople:getNum(text,[/內用人數\s*[:]\s*(\d+)/]),
-    dineInAvg:getNum(text,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
-    dineInRev:getNum(text,[/《內用》[\s\S]{0,400}?當日金額\s*[:]\s*(\d+)/]),
-    takeoutRev:getNum(text,[/現場[^》\n]*》?[\s\S]{0,200}?當日金額\s*[:]\s*(\d+)/]),
-    takeoutMonth:getNum(text,[/現場[^》\n]*》?[\s\S]{0,200}?當月累計金額\s*[:]\s*(\d+)/]),
-    onlineRev:getNum(text,[/線上點餐[^》\n]*》?[\s\S]{0,200}?當日金額\s*[:]\s*(\d+)/]),
-    onlineMonth:getNum(text,[/線上點餐[^》\n]*》?[\s\S]{0,200}?當月累計金額\s*[:]\s*(\d+)/]),
-    uberOrders:getNum(uBlock,[/外送筆數\s*[:]\s*(\d+)/,/當日筆數\s*[:]\s*(\d+)/]),
-    uberRev:getNum(uBlock,[/當日金額\s*[:]\s*(\d+)/]),
-    uberMonth:getNum(uBlock,[/累[計積]金額\s*[:]\s*(\d+)/]),
-    pandaOrders:getNum(pBlock,[/外送筆數\s*[:]\s*(\d+)/,/當日筆數\s*[:]\s*(\d+)/]),
-    pandaRev:getNum(pBlock,[/當日金額\s*[:]\s*(\d+)/]),
-    pandaMonth:getNum(pBlock,[/累[計積]金額\s*[:]\s*(\d+)/]),
+    totalOrders:getNum(text,[/當日筆數\s*:\s*(\d+)/]),
+    dailyRev:getNum(text,[/當日業績\s*:\s*(\d+)/]),
+    monthRev:getNum(text,[/當月累計業績\s*:\s*(\d+)/]),
+    dineInOrders:getNum(text,[/內用筆數\s*:\s*(\d+)/]),
+    dineInPeople:getNum(text,[/內用人數\s*:\s*(\d+)/]),
+    dineInAvg:getNum(text,[/當日均單\(人\)\s*:\s*(\d+)/]),
+    dineInRev:getNum(text,[/《內用》[\s\S]*?當日金額\s*:\s*(\d+)/]),
+    takeoutRev:getNum(text,[/現場[^》\n]*》?[\s\S]*?當日金額\s*:\s*(\d+)/]),
+    takeoutMonth:getNum(text,[/現場[^》\n]*》?[\s\S]*?當月累計金額\s*:\s*(\d+)/]),
+    onlineRev:getNum(text,[/線上點餐[^》\n]*》?[\s\S]*?當日金額\s*:\s*(\d+)/]),
+    onlineMonth:getNum(text,[/線上點餐[^》\n]*》?[\s\S]*?當月累計金額\s*:\s*(\d+)/]),
+    uberOrders:getNum(uBlock,[/外送筆數\s*:\s*(\d+)/,/當日筆數\s*:\s*(\d+)/]),
+    uberRev:getNum(uBlock,[/當日金額\s*:\s*(\d+)/]),
+    uberMonth:getNum(uBlock,[/累[計積]金額\s*:\s*(\d+)/]),
+    pandaOrders:getNum(pBlock,[/外送筆數\s*:\s*(\d+)/,/當日筆數\s*:\s*(\d+)/]),
+    pandaRev:getNum(pBlock,[/當日金額\s*:\s*(\d+)/]),
+    pandaMonth:getNum(pBlock,[/累[計積]金額\s*:\s*(\d+)/]),
   };
 }
 
 function doParseAndSave(){
   const text=document.getElementById('paste-box').value.trim();
   if(!text){showMsg('parse-msg','請先貼入報表文字','err');return;}
-  const blocks=splitBlocks(text);
-  if(!blocks.length){showMsg('parse-msg','解析失敗：找不到有效報表','err');return;}
-  blocks.forEach(b=>{const r=parseBlock(b); if(r) db[r.date+'_'+r.store]=r;});
   
+  const blocks=splitBlocks(text);
+  if(!blocks.length){showMsg('parse-msg','解析失敗：找不到有效報表資料','err');return;}
+  
+  let validCount = 0;
+  blocks.forEach(b=>{
+    const r=parseBlock(b); 
+    if(r && r.date) {
+        db[r.date+'_'+r.store]=r;
+        validCount++;
+    }
+  });
+  
+  // 清理 3 個月前的舊資料
   const now=new Date();
   const cut=new Date(now.getFullYear(),now.getMonth()-3,now.getDate());
   const cutStr=cut.getFullYear()+'/'+String(cut.getMonth()+1).padStart(2,'0')+'/'+String(cut.getDate()).padStart(2,'0');
@@ -327,12 +341,12 @@ function doParseAndSave(){
   saveDB();
   document.getElementById('rec-count').textContent=Object.keys(db).length;
   document.getElementById('paste-box').value='';
-  showMsg('parse-msg','成功解析！請記得點擊推送至雲端。','ok');
+  showMsg('parse-msg','成功解析 '+validCount+' 筆資料！請記得點擊「推送」存入雲端。','ok');
   renderOv();renderDSel();renderPromo();
 }
 
 function clearAll(){
-  if(!confirm('確定清除所有暫存數據？(不影響雲端)'))return;
+  if(!confirm('確定清除所有手機暫存？(不影響 Google 雲端)'))return;
   db={};saveDB();
   document.getElementById('rec-count').textContent=0;
   renderOv();renderDSel();
@@ -357,22 +371,19 @@ async function syncToSheets(){
   try {
     const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'sync_data', records: Object.values(db) }) });
     const res = await resp.json();
-    if(res.status==='success'){ showMsg('sheets-msg','同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
+    if(res.status==='success'){ showMsg('sheets-msg','雲端同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
   } catch(e) { showMsg('sheets-msg','同步失敗','err'); setSyncStatus('offline','同步失敗'); }
   finally { btn.disabled=false; }
 }
 
-// ✨ 強制時區校正與空白轉換防呆
 async function loadFromSheets() {
-  setSyncStatus('syncing', '載入雲端數據...');
+  setSyncStatus('syncing', '載入雲端數據中...');
   try {
     const resp = await fetch(GAS_API_URL+'?action=get_latest');
     const data = await resp.json();
     if(data.status==='success' && data.records){
       data.records.forEach(r => { 
         let cleanDate = r.date;
-        
-        // 修正 Google Sheets UTC 時間落差，轉換為本地正確日期
         if(typeof cleanDate === 'string' && cleanDate.includes('T')) {
             const d = new Date(cleanDate);
             cleanDate = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
@@ -381,11 +392,10 @@ async function loadFromSheets() {
         }
         r.date = cleanDate;
         
-        // 強制把雲端空白的欄位轉回數字 0，防止出現 NaN
-        const numFields = ['dailyRev', 'monthRev', 'totalOrders', 'dineInAvg', 'dineInRev', 'dineInOrders', 'dineInPeople', 'uberRev', 'pandaRev', 'uberMonth', 'pandaMonth', 'takeoutRev', 'onlineRev', 'takeoutMonth', 'onlineMonth'];
+        // 防呆：強迫將數字轉正，防止 NaN 導致畫面白掉
+        const numFields = ['dailyRev', 'monthRev', 'totalOrders', 'dineInAvg', 'dineInRev', 'dineInOrders', 'dineInPeople', 'uberRev', 'pandaRev', 'uberMonth', 'pandaMonth', 'takeoutRev', 'onlineRev', 'takeoutMonth', 'onlineMonth', 'uberOrders', 'pandaOrders'];
         numFields.forEach(f => { r[f] = parseInt(r[f]) || 0; });
         
-        // 確保布林值正常轉換
         r.hasPromo = !!r.hasPromo;
         r.hasLimited = !!r.hasLimited;
 
@@ -398,7 +408,7 @@ async function loadFromSheets() {
 
 function allDates(){ return [...new Set(Object.values(db).map(r=>r.date).filter(Boolean))].sort().reverse(); }
 
-// 總覽
+// ===== 總覽頁 =====
 function renderOv(){
   const dates=allDates();
   const btnEl=document.getElementById('date-btns');
@@ -443,9 +453,10 @@ function renderOv(){
     const pTag = r.hasPromo ? '<span class="event-tag tag-promo">促</span>' : '';
     const lTag = r.hasLimited ? '<span class="event-tag tag-limited">限</span>' : '';
 
-    const dP=r.dailyRev?Math.round(r.dineInRev/r.dailyRev*100):0;
-    const uP=r.dailyRev?Math.round(r.uberRev/r.dailyRev*100):0;
-    const pP=r.dailyRev?Math.round(r.pandaRev/r.dailyRev*100):0;
+    const dP=r.dailyRev?Math.round((r.dineInRev||0)/r.dailyRev*100):0;
+    const uP=r.dailyRev?Math.round((r.uberRev||0)/r.dailyRev*100):0;
+    const pP=r.dailyRev?Math.round((r.pandaRev||0)/r.dailyRev*100):0;
+    
     return '<div class="scard" onclick="goDetail(\''+s+'\')">'
       +'<div class="scard-top"><span class="sname">'+s+pTag+lTag+'</span><span class="badge '+cls+'">進度 '+pct+'%</span></div>'
       +'<div class="srev">$'+r.dailyRev.toLocaleString()+'</div>'
@@ -460,7 +471,7 @@ function renderOv(){
 function setDate(d){curDate=d;renderOv();}
 function goDetail(s){sw('detail');setDS(s);}
 
-// 各店明細
+// ===== 各店明細頁 =====
 function renderDSel(){
   document.getElementById('dsel').innerHTML=STORES.map(s=>'<button class="ssel'+(s===detStore?' active':'')+'" onclick="setDS(\''+s+'\')">'+s+'</button>').join('');
   renderD();
@@ -562,6 +573,7 @@ function saveTargets(){
   renderOv();
 }
 
+// ===== 促銷建議頁 =====
 function renderPromo(){
   const daysLeft=parseInt(document.getElementById('promo-days').value)||0;
   const grid=document.getElementById('promo-grid');
@@ -625,20 +637,20 @@ function getPromoSuggestions(pct,gap,daysLeft,avgDaily){
   const suggestions = [];
 
   if (boostRatio <= 1.1) {
-    suggestions.push({tag:'推廣加價購', style:'pt-blue', reason:'每日業績缺口小於10%，加強門市人員推廣高毛利小菜、飲料或配料即可輕鬆補足。'});
+    suggestions.push({tag:'推廣加價購', style:'pt-blue', reason:'每日業績缺口小於10%，加強門市人員推廣高毛利小菜、飲料或配料。'});
     suggestions.push({tag:'優化點餐引導', style:'pt-teal', reason:'不需打折，透過話術引導客人升級大碗或加點套餐，保護毛利。'});
   } else if (boostRatio <= 1.3) {
-    suggestions.push({tag:'限定品項特價', style:'pt-amber', reason:'業績需提升10~30%，可針對單一主力或高毛利品項做快閃特價，吸引猶豫客。'});
-    suggestions.push({tag:'外送平台滿額贈', style:'pt-purple', reason:'透過外送平台小幅讓利（如滿300送小菜）快速拉高單筆消費金額。'});
+    suggestions.push({tag:'限定品項特價', style:'pt-amber', reason:'業績需提升10~30%，可針對單一主力或高毛利品項做快閃特價。'});
+    suggestions.push({tag:'外送滿額贈', style:'pt-purple', reason:'透過外送平台小幅讓利（如滿300送小菜）快速拉高單筆消費。'});
   } else {
-    suggestions.push({tag:'外送平台強力折扣', style:'pt-coral', reason:'業績需大幅提升30%以上，建議啟動 Uber/Panda 滿減活動快速衝單。'});
-    suggestions.push({tag:'指定主餐買一送一', style:'pt-coral', reason:'需要強效誘因大幅提高來客數與轉換率，帶動整體營收規模。'});
+    suggestions.push({tag:'外送強力折扣', style:'pt-coral', reason:'業績需大幅提升，建議啟動 Uber/Panda 滿減活動快速衝單。'});
+    suggestions.push({tag:'指定主餐買一送一', style:'pt-coral', reason:'需要強效誘因大幅提高來客數與轉換率，帶動營收規模。'});
   }
 
   if (isEmergency && pct < 85) {
     suggestions.push({tag:'月底限時急救包', style:'pt-coral', reason:`只剩 ${daysLeft} 天且進度落後，建議緊急發放 LINE 熟客高額折扣券。`});
   } else if (daysLeft >= 20 && pct < 30) {
-    suggestions.push({tag:'週間常態回流', style:'pt-green', reason:'月初進度不如預期，應及早發布本月「特定平日」優惠，建立長線回流機制。'});
+    suggestions.push({tag:'週間常態回流', style:'pt-green', reason:'應及早發布本月「特定平日」優惠，建立長線回流機制。'});
   }
   return suggestions.slice(0, 4);
 }
@@ -654,7 +666,7 @@ function sw(name){
 }
 
 window.onload=()=>{ 
-  // ✨ 自動計算並寫入本月剩餘天數
+  // ✨ 自動計算並寫入本月剩餘天數 (只寫入一次，確保可手動修改)
   const now = new Date();
   const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const remainingDays = totalDays - now.getDate();
