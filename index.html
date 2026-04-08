@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
-/* 完全恢復您原本的 CSS 設計 */
+/* --- 完全沿用原始本機版 CSS --- */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
 h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
-.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;}
-.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;}
+.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;overflow-x:auto;}
+.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;white-space:nowrap;}
 .tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500;}
 .view{display:none;}.view.show{display:block;}
 .paste-area{width:100%;min-height:160px;padding:10px;font-size:12px;font-family:monospace;border:0.5px solid #ccc;border-radius:8px;color:#1a1a1a;background:#f0efe8;resize:vertical;}
 .btn{width:100%;padding:10px;border:0.5px solid #ccc;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;margin-top:8px;}
 .btn:hover{background:#f0efe8;}
+.btn:disabled{opacity:0.6;cursor:not-allowed;}
 .msg{font-size:12px;padding:6px 10px;border-radius:8px;margin-top:8px;display:none;}
 .msg.ok{background:#d4edda;color:#155724;}
 .msg.err{background:#f8d7da;color:#721c24;}
@@ -54,20 +55,17 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .ssel{font-size:12px;padding:4px 10px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;color:#666;background:transparent;}
 .ssel.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
 .sec{font-size:12px;font-weight:500;color:#666;margin:12px 0 8px;}
-.trow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.date-btn{font-size:11px;padding:3px 8px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;background:transparent;color:#666;}
-.date-btn.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
-
-/* 編輯視窗 & 狀態燈輔助樣式 */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
-.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:100; justify-content:center; align-items:center; }
+
+/* --- 編輯彈窗所需樣式 --- */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000; justify-content:center; align-items:center; }
 .modal-content { background:#fff; width:90%; max-width:380px; padding:20px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); }
-.form-input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:10px; }
+.modal-content input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:10px; }
 
 @media(max-width:520px){
   .metrics{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -78,7 +76,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 </head>
 <body>
 <div class="wrap">
-  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
     <h1>麵屋武藏業績儀表板</h1>
     <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">連線中...</span></div>
   </div>
@@ -93,7 +91,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
  
   <div class="view show" id="view-overview">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
-      <span style="font-size:13px;font-weight:500;" id="ov-title">載入中...</span>
+      <span style="font-size:13px;font-weight:500;" id="ov-title">載入數據中...</span>
       <div id="date-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
     </div>
     <div class="metrics" id="ov-metrics"></div>
@@ -107,67 +105,63 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
   </div>
  
   <div class="view" id="view-input">
-    <div style="font-size:12px;color:#666;margin-bottom:8px;">將 LINE 群組業績報表完整複製貼入</div>
     <textarea class="paste-area" id="paste-box" placeholder="直接貼上 LINE 報表文字..."></textarea>
     <button class="btn" onclick="doParseAndSave()">1. 解析並儲存至本機</button>
-    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="background:#e8f0fe;color:#1a56db;">2. 推送至 Google 試算表 →</button>
+    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="background:#e8f0fe;color:#1a56db;border-color:#b3caf5;">2. 推送更新至 Google 試算表 →</button>
     <div class="msg" id="parse-msg"></div>
     <div class="msg" id="sheets-msg"></div>
+    <div style="margin-top:10px;font-size:12px;color:#666;">已暫存 <span id="rec-count">0</span> 筆 | <button style="color:#c0392b;background:none;border:none;cursor:pointer;" onclick="clearAll()">清除暫存</button></div>
   </div>
  
   <div class="view" id="view-settings">
-    <div class="sec">各店月目標業績設定</div>
+    <div class="sec">各店月目標設定</div>
     <div id="tgt-inputs"></div>
     <button class="btn" onclick="saveTargets()">儲存目標 →</button>
     <div class="msg" id="tgt-msg"></div>
   </div>
  
   <div class="view" id="view-promo">
-    <div style="margin-bottom:10px; font-size:12px;">本月剩餘天數：<input type="number" id="promo-days" value="24" style="width:50px;"> 天</div>
     <div id="promo-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;"></div>
   </div>
 </div>
 
-<!-- 修改彈窗 -->
+<!-- 修改紀錄彈窗 -->
 <div class="modal-overlay" id="edit-modal">
     <div class="modal-content">
-        <div style="font-size:15px; font-weight:500; margin-bottom:15px;" id="m-title">修改資料</div>
-        <div style="font-size:11px; color:#666;">當日業績</div><input type="number" class="form-input" id="m-dailyRev">
-        <div style="font-size:11px; color:#666;">當月累計</div><input type="number" class="form-input" id="m-monthRev">
-        <div style="font-size:11px; color:#666;">總筆數</div><input type="number" class="form-input" id="m-totalOrders">
-        <div style="font-size:11px; color:#666;">均單價</div><input type="number" class="form-input" id="m-dineInAvg">
+        <div style="font-size:15px; font-weight:500; margin-bottom:15px;" id="m-title">修改紀錄</div>
+        <div style="font-size:11px; color:#666;">當日業績</div><input type="number" id="m-dailyRev">
+        <div style="font-size:11px; color:#666;">當月累計業績</div><input type="number" id="m-monthRev">
+        <div style="font-size:11px; color:#666;">今日總筆數</div><input type="number" id="m-totalOrders">
+        <div style="font-size:11px; color:#666;">內用均單價</div><input type="number" id="m-dineInAvg">
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn" onclick="closeModal()" style="flex:1;">取消</button>
-            <button class="btn" id="m-save-btn" style="flex:2; background:#e8f0fe; color:#1a56db;">儲存並同步</button>
+            <button class="btn" id="m-save-btn" style="flex:2; background:#e8f0fe; color:#1a56db; border-color:#b3caf5;">儲存並同步</button>
         </div>
     </div>
 </div>
 
 <script>
-// ✨ 換上您最新的 GAS URL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx6YkUDZoWpgdqTAvvSweB-H4JFUE3zIwCkYGhUSQEAbDagq6_aNnLW9lBd1Airv1OezQ/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
-
 let db={}, tgts=Object.assign({},DEF_TGTS);
 let curDate = ''; 
 let detStore = STORES[0];
 
-// 初始化載入
-try{
-  const s=localStorage.getItem('musashi_db'); if(s) db=JSON.parse(s);
-  const t=localStorage.getItem('musashi_tgts'); if(t) tgts=JSON.parse(t);
-}catch(e){}
+try {
+    const s = localStorage.getItem('musashi_db'); if(s) db = JSON.parse(s);
+    const t = localStorage.getItem('musashi_tgts'); if(t) tgts = JSON.parse(t);
+} catch(e) {}
 
-function saveDB(){localStorage.setItem('musashi_db',JSON.stringify(db));}
-function saveTgtsLS(){localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}
+function saveDB() { localStorage.setItem('musashi_db', JSON.stringify(db)); }
+function saveTgtsLS() { localStorage.setItem('musashi_tgts', JSON.stringify(tgts)); }
 
-// 解析
+// 解析邏輯
 function norm(t){return t.replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats').replace(/《Foodpanda》/g,'Foodpanda');}
 function parseDate(raw){
     const m=raw.match(/(\d{1,2})[月\/](\d{1,2})/);
     if(m){
-        const mo=parseInt(m[1]), da=parseInt(m[2]), now=new Date();
+        const mo=parseInt(m[1]),da=parseInt(m[2]),now=new Date();
         const yr=(mo>now.getMonth()+1 && now.getMonth()+1<=3)?now.getFullYear()-1:now.getFullYear();
         return yr+'/'+String(mo).padStart(2,'0')+'/'+String(da).padStart(2,'0');
     }
@@ -195,10 +189,18 @@ function parseBlock(raw){
         dailyRev:getNum(t,[/當日業績\s*[:]\s*(\d+)/]),
         monthRev:getNum(t,[/當月累計業績\s*[:]\s*(\d+)/]),
         totalOrders:getNum(t,[/當日筆數\s*[:]\s*(\d+)/]),
+        dineInOrders:getNum(t,[/內用筆數\s*[:]\s*(\d+)/]),
+        dineInPeople:getNum(t,[/內用人數\s*[:]\s*(\d+)/]),
         dineInAvg:getNum(t,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
+        dineInRev:getNum(t,[/《內用》[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+        takeoutRev:getNum(t,[/現場[^》]*?當日金額\s*[:]\s*(\d+)/]),
+        takeoutMonth:getNum(t,[/現場[^》]*?當月累計金額\s*[:]\s*(\d+)/]),
+        onlineRev:getNum(t,[/線上點餐[^》]*?當日金額\s*[:]\s*(\d+)/]),
+        onlineMonth:getNum(t,[/線上點餐[^》]*?當月累計金額\s*[:]\s*(\d+)/]),
         uberRev:getNum(t,[/UberEats[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+        uberMonth:getNum(t,[/UberEats[\s\S]*?累[計積]金額\s*[:]\s*(\d+)/]),
         pandaRev:getNum(t,[/Foodpanda[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
-        dineInRev:getNum(t,[/《內用》[\s\S]*?當日金額\s*[:]\s*(\d+)/])
+        pandaMonth:getNum(t,[/Foodpanda[\s\S]*?累[計積]金額\s*[:]\s*(\d+)/])
     };
 }
 
@@ -207,6 +209,7 @@ function doParseAndSave(){
     blocks.forEach(b=>{const r=parseBlock(b); if(r) db[r.date+'_'+r.store]=r;});
     saveDB(); renderOv(); document.getElementById('paste-box').value='';
     showMsg('parse-msg','解析完成！','ok');
+    document.getElementById('rec-count').textContent=Object.keys(db).length;
 }
 
 async function syncToSheets(){
@@ -219,7 +222,7 @@ async function syncToSheets(){
 }
 
 async function loadFromSheets() {
-    setSyncStatus('syncing', '載入雲端中...');
+    setSyncStatus('syncing', '讀取雲端中...');
     try {
         const resp = await fetch(GAS_API_URL+'?action=get_latest');
         const data = await resp.json();
@@ -230,11 +233,12 @@ async function loadFromSheets() {
                 r.date = cleanDate;
                 db[cleanDate+'_'+r.store]=r; 
             });
-            saveDB(); setSyncStatus('online','已載入最新數據'); renderOv();
+            saveDB(); setSyncStatus('online','雲端數據已更新'); renderOv();
         }
     } catch(e) { setSyncStatus('offline','目前僅顯示本機'); renderOv(); }
 }
 
+// 總覽：標籤 wording 修正 & 燈號進步邏輯
 function renderOv(){
     const dates = allDates();
     if(!dates.length){ document.getElementById('ov-title').textContent='尚無數據'; return; }
@@ -243,7 +247,7 @@ function renderOv(){
     const now = new Date(), totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), currentDay = now.getDate();
     const timeProgressPct = Math.round((currentDay / totalDays) * 100);
     
-    document.getElementById('ov-title').textContent = curDate + ' 業績總覽';
+    document.getElementById('ov-title').textContent = curDate + ' 總覽';
     document.getElementById('date-btns').innerHTML = dates.slice(0,5).map(d=>`<button class="date-btn ${d===curDate?'active':''}" onclick="setDate('${d}')">${d.slice(5)}</button>`).join('');
     
     const rows = Object.values(db).filter(r=>r.date===curDate);
@@ -259,7 +263,8 @@ function renderOv(){
         const r=rows.find(x=>x.store===s); 
         if(!r) return `<div class="scard" onclick="sw('detail');setDS('${s}')"><div class="scard-top"><span class="sname">${s}</span><span class="badge bx">未回報</span></div><div class="no-data">尚未收到報表</div></div>`;
         const pct = Math.min(100, Math.round(r.monthRev/tgts[s]*100));
-        // ✨ 優化燈號：進度百分比 vs 時間百分比
+        
+        // ✨ 進步燈號邏輯修正
         let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 3)) ? 'ba' : 'br';
         let bc = (cls==='bg') ? '#3a9d65' : (cls==='ba') ? '#e67e22' : '#c0392b';
         
@@ -267,27 +272,46 @@ function renderOv(){
             <div class="scard-top"><span class="sname">${s}</span><span class="badge ${cls}">進度 ${pct}%</span></div>
             <div class="srev">$${r.dailyRev.toLocaleString()}</div>
             <div class="bar-wrap"><div class="bar" style="width:${pct}%; background:${bc};"></div></div>
-            <div class="srow"><span>筆數 ${r.totalOrders}</span><span>均單 $${r.dineInAvg}</span></div>
+            <div class="srow"><span>${r.totalOrders}筆</span><span>均單$${r.dineInAvg}</span></div>
         </div>`;
     }).join('');
 }
 
+// ✨ 各店明細：還原原始 6 塊卡片 + 歷史表格格式
 function setDS(s){ detStore=s; renderD(); }
 function renderD(){
     const rows = Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
     document.getElementById('dsel').innerHTML=STORES.map(s=>`<button class="ssel ${s===detStore?'active':''}" onclick="setDS('${s}')">${s}</button>`).join('');
     if(!rows.length){ document.getElementById('dcontent').innerHTML='<div class="no-data">尚無資料</div>'; return; }
+    
     const r=rows[0], key = r.date + '_' + r.store;
+    const tgt=tgts[detStore]||2000000;
+    const pct=Math.round(r.monthRev/tgt*100);
+    const rem=Math.max(tgt-r.monthRev,0);
+    const bc=pct>=100?'#3a9d65':pct>=70?'#e67e22':'#c0392b';
+
     document.getElementById('dcontent').innerHTML=`
+        <div class="sec">${detStore} — ${r.date} 最新數據</div>
         <div class="bgrid">
-            <div class="bcard"><div class="t">今日營收</div><div class="v">$${r.dailyRev.toLocaleString()}</div></div>
-            <div class="bcard"><div class="t">本月累計</div><div class="v">$${r.monthRev.toLocaleString()}</div></div>
-            <div class="bcard"><div class="t">總筆數</div><div class="v">${r.totalOrders}筆</div></div>
-            <div class="bcard"><div class="t">內用均單</div><div class="v">$${r.dineInAvg}</div></div>
+            <div class="bcard"><div class="t">今日業績</div><div class="v">$${r.dailyRev.toLocaleString()}</div><div class="s">${r.totalOrders}筆</div></div>
+            <div class="bcard"><div class="t">當月達成率</div><div class="v" style="color:${bc};">${pct}%</div><div class="s">累計 $${r.monthRev.toLocaleString()} ／ 目標 $${tgt.toLocaleString()}</div><div class="s">還差 $${rem.toLocaleString()}</div></div>
+            <div class="bcard"><div class="t">內用</div><div class="v">$${(r.dineInRev||0).toLocaleString()}</div><div class="s">${r.dineInOrders||0}筆 ／ ${r.dineInPeople||0}人 ／ 均單$${r.dineInAvg}</div></div>
+            <div class="bcard"><div class="t">外送平台（今日）</div><div class="v">$${((r.uberRev||0)+(r.pandaRev||0)).toLocaleString()}</div><div class="s">Uber $${(r.uberRev||0).toLocaleString()} ／ Panda $${(r.pandaRev||0).toLocaleString()}</div></div>
+            <div class="bcard"><div class="t">外帶自取（今日）</div><div class="v">$${((r.takeoutRev||0)+(r.onlineRev||0)).toLocaleString()}</div><div class="s">現場 $${(r.takeoutRev||0).toLocaleString()} ／ 線上 $${(r.onlineRev||0).toLocaleString()}</div></div>
+            <div class="bcard"><div class="t">本月 Uber／Panda 累計</div><div class="v">$${((r.uberMonth||0)+(r.pandaMonth||0)).toLocaleString()}</div><div class="s">Uber $${(r.uberMonth||0).toLocaleString()} ／ Panda $${(r.pandaMonth||0).toLocaleString()}</div></div>
         </div>
-        <button class="btn" style="color:#1a56db;" onclick="openEditModal('${key}')">✏️ 修改此筆紀錄</button>`;
+        <button class="btn" style="color:#1a56db; margin-bottom:20px;" onclick="openEditModal('${key}')">✏️ 修改此筆紀錄並同步雲端</button>
+        
+        <div class="sec">歷史紀錄（最近${Math.min(rows.length,14)}天）</div>
+        <div style="overflow-x:auto;"><table class="dtable">
+            <thead><tr><th>日期</th><th>業績</th><th>筆數</th><th>均單</th><th>Uber</th><th>Panda</th><th>當月累計</th></tr></thead>
+            <tbody>${rows.slice(0,14).map(x=>
+                `<tr><td>${x.date.slice(5)}</td><td>$${x.dailyRev.toLocaleString()}</td><td>${x.totalOrders}</td><td>$${x.dineInAvg}</td><td>$${(x.uberRev||0).toLocaleString()}</td><td>$${(x.pandaRev||0).toLocaleString()}</td><td>$${x.monthRev.toLocaleString()}</td></tr>`
+            ).join('')}</tbody>
+        </table></div>`;
 }
 
+// Modal 處理
 function openEditModal(key) {
     const r = db[key];
     document.getElementById('m-title').textContent = `${r.store} (${r.date})`;
@@ -301,6 +325,8 @@ function openEditModal(key) {
 function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
 async function saveEditedRecord(key) {
     const r = db[key];
+    const btn = document.getElementById('m-save-btn');
+    btn.disabled = true; btn.textContent = '同步中...';
     r.dailyRev = parseInt(document.getElementById('m-dailyRev').value);
     r.monthRev = parseInt(document.getElementById('m-monthRev').value);
     r.totalOrders = parseInt(document.getElementById('m-totalOrders').value);
@@ -309,19 +335,21 @@ async function saveEditedRecord(key) {
     try {
         await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'update_single', record: r }) });
         closeModal(); renderOv(); renderD();
-    } catch(e) { alert('同步失敗'); }
+        showMsg('sheets-msg','雲端同步修改成功！','ok');
+    } catch(e) { alert('同步失敗，僅本機存檔。'); }
+    finally { btn.disabled = false; btn.textContent = '儲存並同步'; }
 }
 
-function renderTgtInputs(){ document.getElementById('tgt-inputs').innerHTML=STORES.map(s=>`<div class="trow">${s}: <input type="number" id="t_${s}" value="${tgts[s]}" style="width:120px;"></div>`).join(''); }
-function saveTargets(){ STORES.forEach(s=>tgts[s]=parseInt(document.getElementById('t_'+s).value)); saveTgtsLS(); renderOv(); }
+function renderTgtInputs(){ document.getElementById('tgt-inputs').innerHTML=STORES.map(s=>`<div class="trow">${s} 目標: <input type="number" id="t_${s}" value="${tgts[s]}" style="width:120px; padding:4px; border:1px solid #ccc; border-radius:4px;"></div>`).join(''); }
+function saveTargets(){ STORES.forEach(s=>tgts[s]=parseInt(document.getElementById('t_'+s).value)); saveTgtsLS(); showMsg('tgt-msg','目標已更新','ok'); renderOv(); }
 function sw(n){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('show', v.id==='view-'+n)); document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','input','settings','promo'][i]===n)); if(n==='detail')renderD(); if(n==='settings')renderTgtInputs(); }
 function setDate(d){ curDate=d; renderOv(); }
 function setSyncStatus(s,t){ document.getElementById('status-dot').className='dot '+s; document.getElementById('status-text').textContent=t; }
 function showMsg(id,t,type){ const el=document.getElementById(id); el.textContent=t; el.className='msg '+type; el.style.display='block'; setTimeout(()=>el.style.display='none',5000); }
 function allDates(){ return [...new Set(Object.values(db).map(r=>r.date))].sort().reverse(); }
-function clearAll(){ if(confirm('確定清除暫存？')) { db={}; saveDB(); renderOv(); } }
+function clearAll(){ if(confirm('確定清除暫存？')) { db={}; saveDB(); renderOv(); document.getElementById('rec-count').textContent=0;} }
 
-window.onload=()=>{ renderOv(); loadFromSheets(); };
+window.onload=()=>{ loadFromSheets(); };
 </script>
 </body>
 </html>
