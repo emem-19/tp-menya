@@ -5,20 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
-/* CSS 保持原本的優質設計 */
+/* 完全恢復您原本的 CSS 設計 */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
 h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
-.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;overflow-x:auto;}
-.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;white-space:nowrap;}
+.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;}
+.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;}
 .tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500;}
 .view{display:none;}.view.show{display:block;}
 .paste-area{width:100%;min-height:160px;padding:10px;font-size:12px;font-family:monospace;border:0.5px solid #ccc;border-radius:8px;color:#1a1a1a;background:#f0efe8;resize:vertical;}
 .btn{width:100%;padding:10px;border:0.5px solid #ccc;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;margin-top:8px;}
-.btn:hover{background:#e8e7e1;}
-.btn.primary{background:#e8f0fe;color:#1a56db;border-color:#b3caf5;}
-.btn:disabled{opacity:0.6;cursor:not-allowed;}
+.btn:hover{background:#f0efe8;}
 .msg{font-size:12px;padding:6px 10px;border-radius:8px;margin-top:8px;display:none;}
 .msg.ok{background:#d4edda;color:#155724;}
 .msg.err{background:#f8d7da;color:#721c24;}
@@ -41,42 +39,50 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .bar-wrap{height:5px;background:#f0efe8;border-radius:3px;margin-bottom:6px;overflow:hidden;}
 .bar{height:100%;border-radius:3px;}
 .srow{display:flex;justify-content:space-between;font-size:11px;color:#888;}
+.srow span:last-child{color:#1a1a1a;}
+.no-data{font-size:12px;color:#888;text-align:center;padding:16px 0;}
+.dtable{width:100%;border-collapse:collapse;font-size:12px;}
+.dtable th{text-align:left;padding:6px 8px;color:#888;font-weight:400;border-bottom:0.5px solid #e0dfd7;}
+.dtable td{padding:6px 8px;color:#1a1a1a;border-bottom:0.5px solid #e0dfd7;}
+.dtable tr:last-child td{border-bottom:none;}
+.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:1rem;}
+.bcard{background:#fff;border:0.5px solid #e0dfd7;border-radius:12px;padding:12px;}
+.bcard .t{font-size:11px;color:#888;margin-bottom:4px;}
+.bcard .v{font-size:16px;font-weight:500;}
+.bcard .s{font-size:11px;color:#888;margin-top:2px;}
+.ssel-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
+.ssel{font-size:12px;padding:4px 10px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;color:#666;background:transparent;}
+.ssel.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
+.sec{font-size:12px;font-weight:500;color:#666;margin:12px 0 8px;}
+.trow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.date-btn{font-size:11px;padding:3px 8px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;background:transparent;color:#666;}
+.date-btn.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
+
+/* 編輯視窗 & 狀態燈輔助樣式 */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
-.time-progress-bar { height: 4px; background: #e0dfd7; border-radius: 2px; margin: 4px 0 12px 0; position: relative; }
-.time-marker { position: absolute; height: 10px; width: 2px; background: #1a1a1a; top: -3px; }
-.time-label { font-size: 10px; color: #666; margin-top: 4px; display: block; }
-.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; justify-content:center; align-items:center; }
-.modal-content { background:#fff; width:90%; max-width:400px; padding:20px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
-.modal-title { font-size:16px; font-weight:500; margin-bottom:15px; border-bottom:0.5px solid #eee; padding-bottom:10px; }
-.form-row { margin-bottom:12px; }
-.form-label { font-size:11px; color:#666; display:block; margin-bottom:4px; }
-.form-input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; }
-.modal-btns { display:flex; gap:10px; margin-top:20px; }
-.pcard{background:#fff;border:0.5px solid #e0dfd7;border-radius:12px;padding:14px; margin-bottom: 10px; }
-.ptag{font-size:11px;padding:3px 9px;border-radius:8px;border:0.5px solid transparent; margin-right: 4px; display: inline-block; margin-bottom: 4px;}
-.pt-blue{background:#e8f0fe;color:#174ea6;border-color:#b3caf5;}
-.pt-teal{background:#d0f4e8;color:#065f46;border-color:#6ee7b7;}
-.pt-amber{background:#fff3cd;color:#7a4f00;border-color:#f5c842;}
-.pt-coral{background:#fde8e4;color:#7f1d1d;border-color:#fca5a5;}
-.pt-purple{background:#f0e6fe;color:#4a1480;border-color:#c084fc;}
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:100; justify-content:center; align-items:center; }
+.modal-content { background:#fff; width:90%; max-width:380px; padding:20px; border-radius:12px; box-shadow:0 10px 25px rgba(0,0,0,0.1); }
+.form-input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:10px; }
+
 @media(max-width:520px){
   .metrics{grid-template-columns:repeat(2,minmax(0,1fr));}
   .sgrid{grid-template-columns:1fr;}
+  .bgrid{grid-template-columns:1fr;}
 }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
-    <h1 style="margin-bottom:0;">麵屋武藏業績儀表板</h1>
-    <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">載入中...</span></div>
+  <div style="display:flex; justify-content:space-between; align-items:baseline;">
+    <h1>麵屋武藏業績儀表板</h1>
+    <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">連線中...</span></div>
   </div>
-  
+
   <div class="tabs">
     <button class="tab active" onclick="sw('overview')">總覽</button>
     <button class="tab" onclick="sw('detail')">各店明細</button>
@@ -86,16 +92,13 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
   </div>
  
   <div class="view show" id="view-overview">
-    <div style="margin-bottom:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px; margin-bottom: 4px;">
-            <span style="font-size:14px;font-weight:500;" id="ov-title">正在連線至試算表...</span>
-            <div id="date-btns" style="display:flex;gap:5px;"></div>
-        </div>
-        <div id="time-progress-container"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
+      <span style="font-size:13px;font-weight:500;" id="ov-title">載入中...</span>
+      <div id="date-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
     </div>
     <div class="metrics" id="ov-metrics"></div>
-    <div class="sec">各店當日業績</div>
-    <div class="sgrid" id="ov-stores"><div class="no-data" style="grid-column:1/-1;">正在與雲端同步...</div></div>
+    <div class="sec">各店今日業績</div>
+    <div class="sgrid" id="ov-stores"></div>
   </div>
  
   <div class="view" id="view-detail">
@@ -104,64 +107,67 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
   </div>
  
   <div class="view" id="view-input">
+    <div style="font-size:12px;color:#666;margin-bottom:8px;">將 LINE 群組業績報表完整複製貼入</div>
     <textarea class="paste-area" id="paste-box" placeholder="直接貼上 LINE 報表文字..."></textarea>
-    <button class="btn primary" onclick="doParseAndSave()">1. 解析並暫存於手機</button>
-    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="margin-top:6px;">2. 推送更新至 Google 試算表</button>
+    <button class="btn" onclick="doParseAndSave()">1. 解析並儲存至本機</button>
+    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="background:#e8f0fe;color:#1a56db;">2. 推送至 Google 試算表 →</button>
     <div class="msg" id="parse-msg"></div>
     <div class="msg" id="sheets-msg"></div>
-    <div style="margin-top:10px;font-size:12px;color:#666;">已暫存 <span id="rec-count">0</span> 筆 | <button style="color:#c0392b;background:none;border:none;cursor:pointer;" onclick="clearAll()">清除暫存</button></div>
   </div>
  
   <div class="view" id="view-settings">
+    <div class="sec">各店月目標業績設定</div>
     <div id="tgt-inputs"></div>
-    <button class="btn" onclick="saveTargets()">儲存目標設定</button>
+    <button class="btn" onclick="saveTargets()">儲存目標 →</button>
     <div class="msg" id="tgt-msg"></div>
   </div>
  
   <div class="view" id="view-promo">
-    <div style="margin-bottom:12px; font-size:12px; color:#666;">本月剩餘天數：<input type="number" id="promo-days" value="24" style="width:50px; padding:2px 5px;" oninput="renderPromo()"> 天</div>
+    <div style="margin-bottom:10px; font-size:12px;">本月剩餘天數：<input type="number" id="promo-days" value="24" style="width:50px;"> 天</div>
     <div id="promo-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;"></div>
   </div>
 </div>
 
+<!-- 修改彈窗 -->
 <div class="modal-overlay" id="edit-modal">
     <div class="modal-content">
-        <div class="modal-title" id="m-title">修改紀錄</div>
-        <div class="form-row"><label class="form-label">當日業績</label><input type="number" class="form-input" id="m-dailyRev"></div>
-        <div class="form-row"><label class="form-label">當月累計業績</label><input type="number" class="form-input" id="m-monthRev"></div>
-        <div class="form-row"><label class="form-label">今日總筆數</label><input type="number" class="form-input" id="m-totalOrders"></div>
-        <div class="form-row"><label class="form-label">內用均單價</label><input type="number" class="form-input" id="m-dineInAvg"></div>
-        <div class="modal-btns">
+        <div style="font-size:15px; font-weight:500; margin-bottom:15px;" id="m-title">修改資料</div>
+        <div style="font-size:11px; color:#666;">當日業績</div><input type="number" class="form-input" id="m-dailyRev">
+        <div style="font-size:11px; color:#666;">當月累計</div><input type="number" class="form-input" id="m-monthRev">
+        <div style="font-size:11px; color:#666;">總筆數</div><input type="number" class="form-input" id="m-totalOrders">
+        <div style="font-size:11px; color:#666;">均單價</div><input type="number" class="form-input" id="m-dineInAvg">
+        <div style="display:flex; gap:10px; margin-top:10px;">
             <button class="btn" onclick="closeModal()" style="flex:1;">取消</button>
-            <button class="btn primary" id="m-save-btn" style="flex:2;">儲存並同步</button>
+            <button class="btn" id="m-save-btn" style="flex:2; background:#e8f0fe; color:#1a56db;">儲存並同步</button>
         </div>
     </div>
 </div>
 
 <script>
-// ✨ 全域變數宣告：確保所有函式都能存取
+// ✨ 換上您最新的 GAS URL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx6YkUDZoWpgdqTAvvSweB-H4JFUE3zIwCkYGhUSQEAbDagq6_aNnLW9lBd1Airv1OezQ/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
+
 let db={}, tgts=Object.assign({},DEF_TGTS);
 let curDate = ''; 
 let detStore = STORES[0];
 
-// 初始化
+// 初始化載入
 try{
-  const s=localStorage.getItem('musashi_db'); if(s)db=JSON.parse(s);
-  const t=localStorage.getItem('musashi_tgts'); if(t)tgts=JSON.parse(t);
+  const s=localStorage.getItem('musashi_db'); if(s) db=JSON.parse(s);
+  const t=localStorage.getItem('musashi_tgts'); if(t) tgts=JSON.parse(t);
 }catch(e){}
 
 function saveDB(){localStorage.setItem('musashi_db',JSON.stringify(db));}
 function saveTgtsLS(){localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}
 
-// 解析邏輯
+// 解析
 function norm(t){return t.replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats').replace(/《Foodpanda》/g,'Foodpanda');}
 function parseDate(raw){
     const m=raw.match(/(\d{1,2})[月\/](\d{1,2})/);
     if(m){
-        const mo=parseInt(m[1]),da=parseInt(m[2]),now=new Date();
+        const mo=parseInt(m[1]), da=parseInt(m[2]), now=new Date();
         const yr=(mo>now.getMonth()+1 && now.getMonth()+1<=3)?now.getFullYear()-1:now.getFullYear();
         return yr+'/'+String(mo).padStart(2,'0')+'/'+String(da).padStart(2,'0');
     }
@@ -170,121 +176,116 @@ function parseDate(raw){
 function getNum(text,pats){for(const p of pats){const m=text.match(p);if(m){const v=parseInt(m[1].replace(/[,\s]/g,''));if(!isNaN(v))return v;}}return 0;}
 
 function splitBlocks(text){
-  const blocks = []; let cur = [];
-  text.split('\n').forEach(ln => {
-    if(/^\d{1,2}:\d{2}\s+/.test(ln.trim()) && cur.length > 0) { blocks.push(cur.join('\n')); cur = []; }
-    cur.push(ln);
-  });
-  if(cur.length > 0) blocks.push(cur.join('\n'));
-  return blocks.filter(b => b.includes('店名') && b.includes('當日業績'));
+    const blocks = []; let cur = [];
+    text.split('\n').forEach(ln => {
+        if(/^\d{1,2}:\d{2}\s+/.test(ln.trim()) && cur.length > 0) { blocks.push(cur.join('\n')); cur = []; }
+        cur.push(ln);
+    });
+    if(cur.length > 0) blocks.push(cur.join('\n'));
+    return blocks.filter(b => b.includes('店名') && b.includes('業績'));
 }
 
 function parseBlock(raw){
-  const t = norm(raw);
-  const dRaw=(t.match(/日期\s*[:]\s*([^\n]+)/)||[])[1], sRaw=(t.match(/店名\s*[:]\s*([^\n]+)/)||[])[1];
-  if(!dRaw||!sRaw)return null;
-  const store = sRaw.trim().split(/[（(【]/)[0];
-  const date = parseDate(dRaw);
-  return {
-    date, store,
-    dailyRev:getNum(t,[/當日業績\s*[:]\s*(\d+)/]),
-    monthRev:getNum(t,[/當月累計業績\s*[:]\s*(\d+)/]),
-    totalOrders:getNum(t,[/當日筆數\s*[:]\s*(\d+)/]),
-    dineInRev:getNum(t,[/《內用》[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
-    dineInAvg:getNum(t,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
-    uberRev:getNum(t,[/UberEats[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
-    pandaRev:getNum(t,[/Foodpanda[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
-    onlineRev:getNum(t,[/線上點餐[^》]*?當日金額\s*[:]\s*(\d+)/])
-  };
+    const t = norm(raw);
+    const dRaw=(t.match(/日期\s*[:]\s*([^\n]+)/)||[])[1], sRaw=(t.match(/店名\s*[:]\s*([^\n]+)/)||[])[1];
+    if(!dRaw||!sRaw)return null;
+    const date = parseDate(dRaw), store = sRaw.trim().split(/[（(【]/)[0];
+    return {
+        date, store,
+        dailyRev:getNum(t,[/當日業績\s*[:]\s*(\d+)/]),
+        monthRev:getNum(t,[/當月累計業績\s*[:]\s*(\d+)/]),
+        totalOrders:getNum(t,[/當日筆數\s*[:]\s*(\d+)/]),
+        dineInAvg:getNum(t,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
+        uberRev:getNum(t,[/UberEats[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+        pandaRev:getNum(t,[/Foodpanda[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+        dineInRev:getNum(t,[/《內用》[\s\S]*?當日金額\s*[:]\s*(\d+)/])
+    };
 }
 
 function doParseAndSave(){
-  const text=document.getElementById('paste-box').value;
-  const blocks=splitBlocks(text); let count=0;
-  blocks.forEach(b=>{const r=parseBlock(b); if(r){db[r.date+'_'+r.store]=r; count++;}});
-  saveDB(); document.getElementById('rec-count').textContent=Object.keys(db).length;
-  document.getElementById('paste-box').value='';
-  showMsg('parse-msg','解析成功，共 '+count+' 筆。','ok');
-  renderOv();
+    const blocks=splitBlocks(document.getElementById('paste-box').value);
+    blocks.forEach(b=>{const r=parseBlock(b); if(r) db[r.date+'_'+r.store]=r;});
+    saveDB(); renderOv(); document.getElementById('paste-box').value='';
+    showMsg('parse-msg','解析完成！','ok');
 }
 
 async function syncToSheets(){
-  const btn=document.getElementById('sheets-btn'); btn.disabled=true;
-  setSyncStatus('syncing', '資料推送中...');
-  try {
-    const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'sync_data', records: Object.values(db) }) });
-    const res = await resp.json();
-    if(res.status==='success'){ showMsg('sheets-msg','同步成功！','ok'); setSyncStatus('online','雲端同步完成'); }
-  } catch(e) { showMsg('sheets-msg','同步失敗','err'); setSyncStatus('offline','同步失敗'); }
-  finally { btn.disabled=false; }
+    setSyncStatus('syncing', '正在同步...');
+    try {
+        const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'sync_data', records: Object.values(db) }) });
+        const res = await resp.json();
+        if(res.status==='success'){ showMsg('sheets-msg','同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
+    } catch(e) { setSyncStatus('offline','同步失敗'); }
 }
 
 async function loadFromSheets() {
-  setSyncStatus('syncing', '讀取雲端數據...');
-  try {
-    const resp = await fetch(GAS_API_URL+'?action=get_latest');
-    const data = await resp.json();
-    if(data.status==='success' && data.records){
-      data.records.forEach(r => { 
-        let cleanDate = r.date;
-        if(typeof cleanDate === 'string' && cleanDate.includes('T')) cleanDate = cleanDate.split('T')[0].replace(/-/g,'/');
-        r.date = cleanDate;
-        db[cleanDate+'_'+r.store]=r; 
-      });
-      saveDB(); renderOv(); setSyncStatus('online','已更新雲端最新數據');
-    }
-  } catch(e) { setSyncStatus('offline','目前僅顯示手機數據'); renderOv(); }
+    setSyncStatus('syncing', '載入雲端中...');
+    try {
+        const resp = await fetch(GAS_API_URL+'?action=get_latest');
+        const data = await resp.json();
+        if(data.status==='success' && data.records){
+            data.records.forEach(r => { 
+                let cleanDate = r.date;
+                if(typeof cleanDate === 'string' && cleanDate.includes('T')) cleanDate = cleanDate.split('T')[0].replace(/-/g,'/');
+                r.date = cleanDate;
+                db[cleanDate+'_'+r.store]=r; 
+            });
+            saveDB(); setSyncStatus('online','已載入最新數據'); renderOv();
+        }
+    } catch(e) { setSyncStatus('offline','目前僅顯示本機'); renderOv(); }
 }
 
 function renderOv(){
-  const dates=allDates(); 
-  if(!dates.length){ 
-    document.getElementById('ov-title').textContent='尚無歷史數據'; 
-    document.getElementById('ov-stores').innerHTML='<div class="no-data">請先解析報表數據。</div>';
-    return; 
-  }
-  if(!curDate||!dates.includes(curDate)) curDate=dates[0];
-  
-  const now = new Date(), totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), currentDay = now.getDate();
-  const timeProgressPct = Math.round((currentDay / totalDays) * 100);
-  
-  document.getElementById('ov-title').textContent=curDate + ' 業績總覽';
-  document.getElementById('date-btns').innerHTML=dates.slice(0,5).map(d=>`<button class="date-btn ${d===curDate?'active':''}" onclick="setDate('${d}')">${d.slice(5)}</button>`).join('');
-  document.getElementById('time-progress-container').innerHTML = `<div class="time-progress-bar"><div class="time-marker" style="left: ${timeProgressPct}%"></div></div><span class="time-label">⏳ 本月時間進度：${timeProgressPct}% (${currentDay}/${totalDays}天)</span>`;
-  
-  const rows = Object.values(db).filter(r=>r.date===curDate);
-  const tRev = rows.reduce((s,r)=>s+r.dailyRev,0);
-  const tMon = rows.reduce((s,r)=>s+r.monthRev,0);
-  
-  document.getElementById('ov-metrics').innerHTML= `
-    <div class="mc"><div class="lbl">今日總營收</div><div class="val">$${tRev.toLocaleString()}</div><div class="sub">${rows.length}店回報</div></div>
-    <div class="mc"><div class="lbl">當月累計</div><div class="val">${(tMon/10000).toFixed(1)}萬</div></div>`;
-  
-  document.getElementById('ov-stores').innerHTML=STORES.map(s=>{
-    const r=rows.find(x=>x.store===s); 
-    if(!r) return `<div class="scard"><div class="sname">${s}</div><div class="no-data">今日尚未回報</div></div>`;
-    const pct = Math.min(100, Math.round(r.monthRev/tgts[s]*100));
-    let cls = pct >= (timeProgressPct - 3) ? (pct>=100?'bg':'ba') : 'br';
-    return `<div class="scard" onclick="sw('detail');setDS('${s}')"><div class="scard-top"><span class="sname">${s}</span><span class="badge ${cls}">進度 ${pct}%</span></div><div class="srev">$${r.dailyRev.toLocaleString()}</div><div class="bar-wrap"><div class="bar" style="width:${pct}%; background:${pct>=100?'#3a9d65':pct>=70?'#e67e22':'#c0392b'};"></div></div><div class="srow"><span>${r.totalOrders}筆</span><span>均單$${r.dineInAvg}</span></div></div>`;
-  }).join('');
+    const dates = allDates();
+    if(!dates.length){ document.getElementById('ov-title').textContent='尚無數據'; return; }
+    if(!curDate || !dates.includes(curDate)) curDate = dates[0];
+
+    const now = new Date(), totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), currentDay = now.getDate();
+    const timeProgressPct = Math.round((currentDay / totalDays) * 100);
+    
+    document.getElementById('ov-title').textContent = curDate + ' 業績總覽';
+    document.getElementById('date-btns').innerHTML = dates.slice(0,5).map(d=>`<button class="date-btn ${d===curDate?'active':''}" onclick="setDate('${d}')">${d.slice(5)}</button>`).join('');
+    
+    const rows = Object.values(db).filter(r=>r.date===curDate);
+    const tRev = rows.reduce((s,r)=>s+r.dailyRev,0), tMon = rows.reduce((s,r)=>s+r.monthRev,0);
+    
+    document.getElementById('ov-metrics').innerHTML= `
+        <div class="mc"><div class="lbl">今日總營收</div><div class="val">$${tRev.toLocaleString()}</div><div class="sub">${rows.length}店回報</div></div>
+        <div class="mc"><div class="lbl">當月累計 (加總)</div><div class="val">${(tMon/10000).toFixed(1)}萬</div></div>
+        <div class="mc"><div class="lbl">今日總筆數</div><div class="val">${rows.reduce((s,r)=>s+r.totalOrders,0)}</div></div>
+        <div class="mc"><div class="lbl">時間進度</div><div class="val">${timeProgressPct}%</div></div>`;
+    
+    document.getElementById('ov-stores').innerHTML=STORES.map(s=>{
+        const r=rows.find(x=>x.store===s); 
+        if(!r) return `<div class="scard" onclick="sw('detail');setDS('${s}')"><div class="scard-top"><span class="sname">${s}</span><span class="badge bx">未回報</span></div><div class="no-data">尚未收到報表</div></div>`;
+        const pct = Math.min(100, Math.round(r.monthRev/tgts[s]*100));
+        // ✨ 優化燈號：進度百分比 vs 時間百分比
+        let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 3)) ? 'ba' : 'br';
+        let bc = (cls==='bg') ? '#3a9d65' : (cls==='ba') ? '#e67e22' : '#c0392b';
+        
+        return `<div class="scard" onclick="sw('detail');setDS('${s}')">
+            <div class="scard-top"><span class="sname">${s}</span><span class="badge ${cls}">進度 ${pct}%</span></div>
+            <div class="srev">$${r.dailyRev.toLocaleString()}</div>
+            <div class="bar-wrap"><div class="bar" style="width:${pct}%; background:${bc};"></div></div>
+            <div class="srow"><span>筆數 ${r.totalOrders}</span><span>均單 $${r.dineInAvg}</span></div>
+        </div>`;
+    }).join('');
 }
 
 function setDS(s){ detStore=s; renderD(); }
 function renderD(){
-  const rows = Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('dsel').innerHTML=STORES.map(s=>`<button class="ssel ${s===detStore?'active':''}" onclick="setDS('${s}')">${s}</button>`).join('');
-  if(!rows.length){ document.getElementById('dcontent').innerHTML='<div class="no-data">該分店尚無資料</div>'; return; }
-  const r=rows[0];
-  const key = r.date + '_' + r.store;
-  document.getElementById('dcontent').innerHTML=`
-    <div class="bgrid">
-        <div class="bcard"><div class="t">今日營收</div><div class="v">$${r.dailyRev.toLocaleString()}</div></div>
-        <div class="bcard"><div class="t">本月累計</div><div class="v">$${r.monthRev.toLocaleString()}</div></div>
-        <div class="bcard"><div class="t">總筆數</div><div class="v">${r.totalOrders}筆</div></div>
-        <div class="bcard"><div class="t">均單價</div><div class="v">$${r.dineInAvg}</div></div>
-    </div>
-    <button class="btn" style="margin-top:20px; color:#1a56db;" onclick="openEditModal('${key}')">✏️ 修正此筆紀錄數據</button>
-  `;
+    const rows = Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
+    document.getElementById('dsel').innerHTML=STORES.map(s=>`<button class="ssel ${s===detStore?'active':''}" onclick="setDS('${s}')">${s}</button>`).join('');
+    if(!rows.length){ document.getElementById('dcontent').innerHTML='<div class="no-data">尚無資料</div>'; return; }
+    const r=rows[0], key = r.date + '_' + r.store;
+    document.getElementById('dcontent').innerHTML=`
+        <div class="bgrid">
+            <div class="bcard"><div class="t">今日營收</div><div class="v">$${r.dailyRev.toLocaleString()}</div></div>
+            <div class="bcard"><div class="t">本月累計</div><div class="v">$${r.monthRev.toLocaleString()}</div></div>
+            <div class="bcard"><div class="t">總筆數</div><div class="v">${r.totalOrders}筆</div></div>
+            <div class="bcard"><div class="t">內用均單</div><div class="v">$${r.dineInAvg}</div></div>
+        </div>
+        <button class="btn" style="color:#1a56db;" onclick="openEditModal('${key}')">✏️ 修改此筆紀錄</button>`;
 }
 
 function openEditModal(key) {
@@ -300,71 +301,25 @@ function openEditModal(key) {
 function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
 async function saveEditedRecord(key) {
     const r = db[key];
-    const btn = document.getElementById('m-save-btn');
-    btn.disabled = true; btn.textContent = '同步中...';
     r.dailyRev = parseInt(document.getElementById('m-dailyRev').value);
     r.monthRev = parseInt(document.getElementById('m-monthRev').value);
     r.totalOrders = parseInt(document.getElementById('m-totalOrders').value);
     r.dineInAvg = parseInt(document.getElementById('m-dineInAvg').value);
     saveDB();
     try {
-        const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'update_single', record: r }) });
-        const res = await resp.json();
-        if(res.status === 'success') {
-            closeModal(); renderOv(); renderD();
-            setSyncStatus('online', '雲端修正完成');
-        }
-    } catch(e) { alert('同步失敗，僅本機存檔。'); }
-    finally { btn.disabled = false; btn.textContent = '儲存並同步'; }
+        await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'update_single', record: r }) });
+        closeModal(); renderOv(); renderD();
+    } catch(e) { alert('同步失敗'); }
 }
 
-function renderTgtInputs(){ 
-    document.getElementById('tgt-inputs').innerHTML=STORES.map(s=>`<div style="margin-bottom:8px;">${s} 目標: <input type="number" id="t_${s}" value="${tgts[s]}" style="padding:4px; border-radius:4px; border:1px solid #ccc;"> 元</div>`).join(''); 
-}
-function saveTargets(){ 
-    STORES.forEach(s=>tgts[s]=parseInt(document.getElementById('t_'+s).value)); 
-    saveTgtsLS(); showMsg('tgt-msg','目標已儲存','ok'); renderOv(); 
-}
-
-function renderPromo(){
-  const daysLeft=parseInt(document.getElementById('promo-days').value)||24;
-  const grid=document.getElementById('promo-grid');
-  const latestByStore={};
-  Object.values(db).forEach(r=>{ if(!latestByStore[r.store]||r.date>latestByStore[r.store].date) latestByStore[r.store]=r; });
-  grid.innerHTML=STORES.map(s=>{
-    const r=latestByStore[s]; if(!r) return '';
-    const gap=Math.max(tgts[s]-r.monthRev,0);
-    const dailyNeed=daysLeft>0?Math.round(gap/daysLeft):0;
-    const pct=Math.round(r.monthRev/tgts[s]*100);
-    const s_tags = getPromoSuggestions(pct, gap, daysLeft, r.dailyRev);
-    return `<div class="pcard">
-        <div style="font-weight:500; margin-bottom:8px;">${s} (進度 ${pct}%)</div>
-        <div style="font-size:12px; color:#666;">距離目標還差：$${gap.toLocaleString()}</div>
-        <div style="font-size:12px; color:#1a1a1a; margin-bottom:8px;">每日需達成：$${dailyNeed.toLocaleString()}</div>
-        <div>${s_tags.map(p=>`<span class="ptag ${p.style}">${p.tag}</span>`).join('')}</div>
-    </div>`;
-  }).join('');
-}
-function getPromoSuggestions(pct,gap,daysLeft,avgDaily){
-  const dailyNeed = daysLeft > 0 ? gap / daysLeft : gap;
-  const boostRatio = avgDaily > 0 ? dailyNeed / avgDaily : 2; 
-  const tags = [];
-  if (boostRatio <= 1.1) { tags.push({tag:'推廣加價購', style:'pt-blue'}); tags.push({tag:'優化話術', style:'pt-teal'}); }
-  else if (boostRatio <= 1.3) { tags.push({tag:'限定特價', style:'pt-amber'}); tags.push({tag:'滿額贈', style:'pt-purple'}); }
-  else { tags.push({tag:'外送強力折扣', style:'pt-coral'}); tags.push({tag:'買一送一', style:'pt-coral'}); }
-  return tags;
-}
-
-function sw(n){ 
-    document.querySelectorAll('.view').forEach(v=>v.classList.toggle('show', v.id==='view-'+n)); 
-    document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','input','settings','promo'][i]===n)); 
-    if(n==='detail')renderD(); if(n==='settings')renderTgtInputs(); if(n==='promo')renderPromo();
-}
+function renderTgtInputs(){ document.getElementById('tgt-inputs').innerHTML=STORES.map(s=>`<div class="trow">${s}: <input type="number" id="t_${s}" value="${tgts[s]}" style="width:120px;"></div>`).join(''); }
+function saveTargets(){ STORES.forEach(s=>tgts[s]=parseInt(document.getElementById('t_'+s).value)); saveTgtsLS(); renderOv(); }
+function sw(n){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('show', v.id==='view-'+n)); document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','input','settings','promo'][i]===n)); if(n==='detail')renderD(); if(n==='settings')renderTgtInputs(); }
 function setDate(d){ curDate=d; renderOv(); }
-function setSyncStatus(s,t){ const d=document.getElementById('status-dot'); d.className='dot '+s; document.getElementById('status-text').textContent=t; }
+function setSyncStatus(s,t){ document.getElementById('status-dot').className='dot '+s; document.getElementById('status-text').textContent=t; }
 function showMsg(id,t,type){ const el=document.getElementById(id); el.textContent=t; el.className='msg '+type; el.style.display='block'; setTimeout(()=>el.style.display='none',5000); }
 function allDates(){ return [...new Set(Object.values(db).map(r=>r.date))].sort().reverse(); }
-function clearAll(){ if(confirm('確定清除手機暫存數據？')) { db={}; saveDB(); renderOv(); } }
+function clearAll(){ if(confirm('確定清除暫存？')) { db={}; saveDB(); renderOv(); } }
 
 window.onload=()=>{ renderOv(); loadFromSheets(); };
 </script>
