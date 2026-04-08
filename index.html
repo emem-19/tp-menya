@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
-/* ====== 完全沿用您的原始樣式 ====== */
+/* 完全沿用您的原始樣式，絕不改動版面 */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
@@ -85,14 +85,13 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .pgap{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:3px;}
 .pontrack{font-size:12px;color:#3a9d65;}
 
-/* ====== 隱藏在底層的新增功能樣式（不干擾原版面） ====== */
+/* 隱藏在底層的新增功能樣式（不干擾原版面） */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
-
 .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
 .modal-content { background:#fff; width:90%; max-width:350px; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 .modal-content input[type="number"] { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:12px; }
@@ -161,7 +160,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
       <span style="font-size:13px;font-weight:500;color:#1a1a1a;">促銷建議分析</span>
       <div style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:12px;color:#666;">本月剩餘天數</span>
-        <input type="number" id="promo-days" value="24" min="1" max="31" style="width:60px;font-size:12px;padding:4px 8px;border:0.5px solid #ccc;border-radius:6px;" oninput="renderPromo()">
+        <input type="number" id="promo-days" min="1" max="31" style="width:60px;font-size:12px;padding:4px 8px;border:0.5px solid #ccc;border-radius:6px;" oninput="renderPromo()">
       </div>
     </div>
     <div id="promo-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
@@ -197,7 +196,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 
 <script>
 // --- 全域變數 ---
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxv4ezD12DcPyIQjH1er-izIGp7KyBF21-m4wG5mng4G9ry4j58omc50WXName-qOLqPw/exec";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwXh1xZiTzryXBOc5Cm--LTF3_mi9eWB1TweWpVxRUXQDYwgxdalFOioq8x7b_PLlZdGQ/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
 let db={}, tgts=Object.assign({},DEF_TGTS);
@@ -226,7 +225,6 @@ function norm(t){
   return t.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/[\u200B\u200C\u200D\uFEFF]/g,'').replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats').replace(/Uber\s*Eats/gi,'UberEats').replace(/Uber\s*Eat\b/gi,'UberEats').replace(/《Foodpanda》/g,'Foodpanda').replace(/《UBER》/gi,'UberEats');
 }
 
-// ✨ 強制從「日期：」後方抓取，去除所有空白確保萬無一失 (解決 4月 6日 問題)
 function parseDate(raw){
   raw = (raw||'').replace(/\s+/g, '').replace(/：/g,':'); 
   let m = raw.match(/(\d{1,2})[月\/](\d{1,2})/);
@@ -278,12 +276,11 @@ function parseBlock(raw){
   if(!dRaw||!sRaw) return null;
   
   const date=parseDate(dRaw);
-  if(!date) return null; // 防呆
+  if(!date) return null;
 
   const store=parseStore(sRaw);
   if(!store) return null;
 
-  // ✨ 自動偵測活動關鍵字
   const hasPromo = text.includes('《門市優惠活動》') || text.includes('滿500折100');
   const hasLimited = text.includes('《期間限定麵》');
   
@@ -346,7 +343,6 @@ function showMsg(id,t,type){
   setTimeout(()=>{el.style.display='none';},5000);
 }
 
-// ✨ Google Sheets 連線狀態
 function setSyncStatus(s,t){ 
   const d=document.getElementById('status-dot'); 
   const txt=document.getElementById('status-text');
@@ -382,7 +378,6 @@ async function loadFromSheets() {
   } catch(e) { setSyncStatus('offline','目前僅顯示手機資料'); renderOv(); }
 }
 
-// 🛡️ 防呆：過濾掉任何 null
 function allDates(){ return [...new Set(Object.values(db).map(r=>r.date).filter(Boolean))].sort().reverse(); }
 
 // 總覽
@@ -416,7 +411,6 @@ function renderOv(){
     '<div class="mc"><div class="lbl">今日總筆數</div><div class="val">'+tOrd+'</div><div class="sub">全通路</div></div>'+
     '<div class="mc"><div class="lbl">已回報</div><div class="val">'+rows.length+'/'+STORES.length+'</div><div class="sub">'+(unrep.length?'未：'+unrep.join('、'):'全數到齊 ✓')+'</div></div>';
 
-  // ✨ 進階燈號邏輯計算
   const now = new Date();
   const timeProgressPct = Math.round((now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()) * 100);
 
@@ -426,11 +420,9 @@ function renderOv(){
     const tgt=tgts[s]||2000000;
     const pct=Math.min(Math.round(r.monthRev/tgt*100),100);
     
-    // ✨ 新版狀態文字與動態燈號比對
     let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 5)) ? 'ba' : 'br';
     let bc = (cls === 'bg') ? '#3a9d65' : (cls === 'ba') ? '#e67e22' : '#c0392b';
     
-    // 顯示活動小標籤
     const pTag = r.hasPromo ? '<span class="event-tag tag-promo">促</span>' : '';
     const lTag = r.hasLimited ? '<span class="event-tag tag-limited">限</span>' : '';
 
@@ -451,7 +443,7 @@ function renderOv(){
 function setDate(d){curDate=d;renderOv();}
 function goDetail(s){sw('detail');setDS(s);}
 
-// 各店明細 (完美保留原始佈局)
+// 各店明細
 function renderDSel(){
   document.getElementById('dsel').innerHTML=STORES.map(s=>'<button class="ssel'+(s===detStore?' active':'')+'" onclick="setDS(\''+s+'\')">'+s+'</button>').join('');
   renderD();
@@ -501,7 +493,6 @@ function renderD(){
     '</tbody></table></div>';
 }
 
-// ✨ 編輯彈窗功能
 function openEditModal(key) {
     const r = db[key];
     document.getElementById('m-title').textContent = `${r.store} (${r.date})`;
@@ -554,9 +545,9 @@ function saveTargets(){
   renderOv();
 }
 
-// ✨ 促銷建議 (完全還原您的原始排版，只修改 wording)
+// ✨ 促銷建議 (完全保留您的原始卡片排版)
 function renderPromo(){
-  const daysLeft=parseInt(document.getElementById('promo-days').value)||24;
+  const daysLeft=parseInt(document.getElementById('promo-days').value)||0;
   const grid=document.getElementById('promo-grid');
   const latestByStore={};
   Object.values(db).forEach(r=>{
@@ -581,7 +572,6 @@ function renderPromo(){
     const dates=Object.values(db).filter(x=>x.store===s).sort((a,b)=>b.date.localeCompare(a.date));
     const avgDaily=dates.length>1?(dates[0].monthRev-dates[dates.length-1].monthRev+dates[dates.length-1].dailyRev)/dates.length:r.dailyRev;
     
-    // 燈號同步優化
     let badgeCls = (pct >= 100) ? 'pct-ok' : (pct >= (timeProgressPct - 5)) ? 'pct-warn' : 'pct-danger';
     let barColor = (badgeCls === 'pct-ok') ? '#3a9d65' : (badgeCls === 'pct-warn') ? '#e67e22' : '#c0392b';
     
@@ -648,6 +638,15 @@ function sw(name){
 }
 
 window.onload=()=>{ 
+  // ✨ 自動計算並寫入本月剩餘天數
+  const now = new Date();
+  const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const remainingDays = totalDays - now.getDate();
+  const promoInput = document.getElementById('promo-days');
+  if(promoInput) {
+      promoInput.value = remainingDays;
+  }
+
   document.getElementById('rec-count').textContent=Object.keys(db).length;
   loadFromSheets(); 
 };
