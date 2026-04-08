@@ -198,7 +198,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 
 <script>
 // --- 全域變數 ---
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwV6Gq_x_F3uAxUJAcWD9I-JIh6otK8kQ8R-PwoN2qedk22MlInZ6XfUpuqLPl0TNLG9A/exec";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwk3LMVRjCexwwrmSV7LtMaMIpr6gwxZc2yA0s-yZkXtaGiy2plNymmdYsNzoarPw7P_Q/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
 let db={}, tgts=Object.assign({},DEF_TGTS);
@@ -672,7 +672,7 @@ window.onload=()=>{
   const remainingDays = totalDays - now.getDate();
   const promoInput = document.getElementById('promo-days');
   if(promoInput) {
-      promoInput.value = remainingDays;
+      promoInput.value = remainingDays > 0 ? remainingDays : 1;
   }
 
   document.getElementById('rec-count').textContent=Object.keys(db).length;
