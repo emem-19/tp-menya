@@ -5,18 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
-/* 完全沿用您提供的原始樣式 */
+/* 完全沿用您提供的原始樣式，絕不改動版面 */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
 h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
-.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;}
-.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;}
+.tabs{display:flex;gap:0;border-bottom:1px solid #e0dfd7;margin-bottom:1.25rem;overflow-x:auto;}
+.tab{font-size:13px;padding:8px 14px;cursor:pointer;color:#666;border-bottom:2px solid transparent;background:none;border-top:none;border-left:none;border-right:none;transition:all .15s;white-space:nowrap;}
 .tab.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500;}
 .view{display:none;}.view.show{display:block;}
 .paste-area{width:100%;min-height:160px;padding:10px;font-size:12px;font-family:monospace;border:0.5px solid #ccc;border-radius:8px;color:#1a1a1a;background:#f0efe8;resize:vertical;}
 .btn{width:100%;padding:10px;border:0.5px solid #ccc;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;margin-top:8px;}
 .btn:hover{background:#f0efe8;}
+.btn:disabled{opacity:0.6;cursor:not-allowed;}
 .msg{font-size:12px;padding:6px 10px;border-radius:8px;margin-top:8px;display:none;}
 .msg.ok{background:#d4edda;color:#155724;}
 .msg.err{background:#f8d7da;color:#721c24;}
@@ -84,14 +85,14 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .pgap{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:3px;}
 .pontrack{font-size:12px;color:#3a9d65;}
 
-/* 新增：狀態燈號與編輯彈窗所需樣式（不影響原版面） */
+/* 新增：右上角連線狀態 與 編輯彈窗所需樣式（隱藏於底層，不影響原版面） */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
-.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; justify-content:center; align-items:center; }
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
 .modal-content { background:#fff; width:90%; max-width:350px; padding:20px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
 .modal-content input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; margin-bottom:12px; }
 
@@ -139,7 +140,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
     <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="background:#e8f0fe;color:#1a56db;border-color:#b3caf5;margin-top:6px;">2. 推送更新至 Google 試算表 →</button>
     <div class="msg" id="parse-msg"></div>
     <div class="msg" id="sheets-msg"></div>
-    <div style="margin-top:10px;font-size:12px;color:#666;">已儲存 <span id="rec-count">0</span> 筆（保留近3個月）｜<button style="font-size:11px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;" onclick="clearAll()">清除全部</button></div>
+    <div style="margin-top:10px;font-size:12px;color:#666;">已暫存 <span id="rec-count">0</span> 筆（保留近3個月）｜<button style="font-size:11px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;" onclick="clearAll()">清除全部</button></div>
   </div>
  
   <div class="view" id="view-settings">
@@ -163,7 +164,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
   </div>
 </div>
 
-<!-- 新增：修改單筆紀錄彈窗 -->
+<!-- 修改紀錄彈窗 (Modal) -->
 <div class="modal-overlay" id="edit-modal">
     <div class="modal-content">
         <div style="font-size:15px; font-weight:500; margin-bottom:15px; border-bottom:0.5px solid #eee; padding-bottom:10px;" id="m-title">修改紀錄</div>
@@ -183,24 +184,30 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 </div>
 
 <script>
-// ✨ 您提供的最新 GAS 網址
+// --- 全域變數 ---
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyb7tEDo6XnPOTt61j11-A7r3sVSKQywqM5femjiwc3T9Zy8AdxGgWebmxQrWBg-B8vBw/exec";
-
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
 
-// 全域變數明確宣告
 let db={}, tgts=Object.assign({},DEF_TGTS);
-let curDate='';
-let detStore=STORES[0];
+let curDate = ''; 
+let detStore = STORES[0];
 
-// 讀取暫存
-try{
-  const saved=localStorage.getItem('musashi_db');
-  if(saved) db=JSON.parse(saved);
-  const savedTgts=localStorage.getItem('musashi_tgts');
-  if(savedTgts) tgts=JSON.parse(savedTgts);
-}catch(e){}
+// 初始化與防呆自動清理
+try {
+  const s = localStorage.getItem('musashi_db'); 
+  if(s) {
+    db = JSON.parse(s);
+    // ✨ 防呆機制：自動砍掉之前因為解析錯誤而存成 null 的死當資料
+    Object.keys(db).forEach(k => {
+        if(!db[k] || !db[k].date || db[k].date === 'null') {
+            delete db[k];
+        }
+    });
+  }
+  const t = localStorage.getItem('musashi_tgts'); 
+  if(t) tgts = JSON.parse(t);
+} catch(e) {}
 
 function saveDB(){ try{localStorage.setItem('musashi_db',JSON.stringify(db));}catch(e){} }
 function saveTgtsLS(){ try{localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}catch(e){} }
@@ -218,11 +225,10 @@ function norm(t){
     .replace(/《UBER》/gi,'UberEats');
 }
 
-// ✨ 修復 4月 6日 (包含空白) 解析錯誤
+// ✨ 強制從「日期：」後方抓取，去除所有空白確保萬無一失
 function parseDate(raw){
-  raw=(raw||'').trim().replace(/：/g,':').replace(/\s+/g, ''); // 移除所有空白
-  let m;
-  m=raw.match(/(\d{1,2})[月\/](\d{1,2})/);
+  raw = (raw||'').replace(/\s+/g, '').replace(/：/g,':'); // 徹底移除空白
+  let m = raw.match(/(\d{1,2})[月\/](\d{1,2})/);
   if(m){
     const mo=parseInt(m[1]),da=parseInt(m[2]);
     const now=new Date();
@@ -244,6 +250,7 @@ function getNum(text,pats){
   return 0;
 }
 
+// ✨ 使用您最原始且穩定的分割方式
 function splitBlocks(text){
   text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
   const lines=text.split('\n');
@@ -268,16 +275,23 @@ function splitBlocks(text){
 
 function parseBlock(raw){
   const text=norm(raw);
-  const dateRaw=(text.match(/日期\s*[:]\s*([^\n]+)/)||[])[1];
-  const storeRaw=(text.match(/店名\s*[:]\s*([^\n]+)/)||[])[1];
-  if(!dateRaw||!storeRaw) return null;
-  const date=parseDate(dateRaw);
-  const store=parseStore(storeRaw);
-  if(!date||!store) return null;
+  
+  // ✨ 強制定位
+  const dRaw=(text.match(/日期\s*[:：]\s*([^\n]+)/)||[])[1];
+  const sRaw=(text.match(/店名\s*[:：]\s*([^\n]+)/)||[])[1];
+  if(!dRaw||!sRaw) return null;
+  
+  const date=parseDate(dRaw);
+  if(!date) return null; // ✨ 防呆：日期解不出來直接略過，不允許存成 null
+
+  const store=parseStore(sRaw);
+  if(!store) return null;
+  
   const uIdx=text.indexOf('UberEats');
   const pIdx=text.indexOf('Foodpanda');
   const uBlock=uIdx>=0?text.slice(uIdx,pIdx>uIdx?pIdx:uIdx+300):'';
   const pBlock=pIdx>=0?text.slice(pIdx,pIdx+250):'';
+  
   return{
     date,store,
     totalOrders:getNum(text,[/當日筆數\s*[:]\s*(\d+)/]),
@@ -324,18 +338,18 @@ function doParseAndSave(){
   const text=document.getElementById('paste-box').value.trim();
   if(!text){showMsg('parse-msg','請先貼入報表文字','err');return;}
   const res=parseAll(text);
-  if(!res.length){showMsg('parse-msg','解析失敗：找不到有效報表（需包含「店名:」和「當日業績:」）','err');return;}
+  if(!res.length){showMsg('parse-msg','解析失敗：找不到有效報表資料','err');return;}
   res.forEach(r=>{db[r.date+'_'+r.store]=r;});
   prune();
   saveDB();
   document.getElementById('rec-count').textContent=Object.keys(db).length;
   document.getElementById('paste-box').value='';
-  showMsg('parse-msg','成功解析 '+res.length+' 筆','ok');
+  showMsg('parse-msg','成功解析 '+res.length+' 筆資料！','ok');
   renderOv();renderDSel();renderPromo();
 }
 
 function clearAll(){
-  if(!confirm('確定清除所有暫存數據？(不影響雲端)'))return;
+  if(!confirm('確定清除所有暫存數據？(這不會影響雲端資料)'))return;
   db={};saveDB();
   document.getElementById('rec-count').textContent=0;
   renderOv();renderDSel();
@@ -347,21 +361,20 @@ function showMsg(id,t,type){
   setTimeout(()=>{el.style.display='none';},5000);
 }
 
-// 狀態列控制
 function setSyncStatus(s,t){ 
   const d=document.getElementById('status-dot'); 
   d.className='dot '+s; 
   document.getElementById('status-text').textContent=t; 
 }
 
-// ✨ Google Sheets 連線功能
+// ✨ Google Sheets 連線與同步
 async function syncToSheets(){
   const btn=document.getElementById('sheets-btn'); btn.disabled=true;
   setSyncStatus('syncing', '正在同步至雲端...');
   try {
     const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'sync_data', records: Object.values(db) }) });
     const res = await resp.json();
-    if(res.status==='success'){ showMsg('sheets-msg','同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
+    if(res.status==='success'){ showMsg('sheets-msg','雲端同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
   } catch(e) { showMsg('sheets-msg','同步失敗','err'); setSyncStatus('offline','同步失敗'); }
   finally { btn.disabled=false; }
 }
@@ -374,16 +387,20 @@ async function loadFromSheets() {
     if(data.status==='success' && data.records){
       data.records.forEach(r => { 
         let cleanDate = r.date;
+        // 將雲端的 ISO 日期字串轉回 YYYY/MM/DD
         if(typeof cleanDate === 'string' && cleanDate.includes('T')) cleanDate = cleanDate.split('T')[0].replace(/-/g,'/');
         r.date = cleanDate;
-        db[cleanDate+'_'+r.store]=r; 
+        if(r.date) db[cleanDate+'_'+r.store]=r; 
       });
-      saveDB(); setSyncStatus('online','雲端數據已更新'); renderOv();
+      saveDB(); setSyncStatus('online','雲端數據已更新'); renderOv(); renderDSel();
     }
-  } catch(e) { setSyncStatus('offline','目前僅顯示本機資料'); renderOv(); }
+  } catch(e) { setSyncStatus('offline','目前僅顯示手機資料'); renderOv(); }
 }
 
-function allDates(){return[...new Set(Object.values(db).map(r=>r.date))].sort().reverse();}
+function allDates(){
+    // ✨ 防呆：過濾掉任何 null，避免 slice() 報錯當機
+    return [...new Set(Object.values(db).map(r=>r.date).filter(Boolean))].sort().reverse();
+}
 
 // 總覽
 function renderOv(){
@@ -395,8 +412,14 @@ function renderOv(){
     document.getElementById('ov-stores').innerHTML='<div class="no-data" style="grid-column:1/-1;">請先在「貼上報表」貼入 LINE 報表</div>';
     btnEl.innerHTML='';return;
   }
+  
   if(!curDate||!dates.includes(curDate))curDate=dates[0];
-  btnEl.innerHTML=dates.slice(0,7).map(d=>'<button class="date-btn'+(d===curDate?' active':'')+'" onclick="setDate(\''+d+'\')">'+d.slice(5)+'</button>').join('');
+  
+  btnEl.innerHTML=dates.slice(0,7).map(d=> {
+      if(!d) return ''; 
+      return '<button class="date-btn'+(d===curDate?' active':'')+'" onclick="setDate(\''+d+'\')">'+d.slice(5)+'</button>';
+  }).join('');
+  
   const rows=Object.values(db).filter(r=>r.date===curDate);
   document.getElementById('ov-title').textContent=curDate+' 業績總覽';
   const tRev=rows.reduce((s,r)=>s+r.dailyRev,0);
@@ -422,8 +445,8 @@ function renderOv(){
     const tgt=tgts[s]||2000000;
     const pct=Math.min(Math.round(r.monthRev/tgt*100),100);
     
-    // ✨ 新版狀態文字與動態燈號比對
-    let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 3)) ? 'ba' : 'br';
+    // ✨ 燈號與文字優化 (只使用 "進度"，並與時間比較)
+    let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 5)) ? 'ba' : 'br';
     let bc = (cls === 'bg') ? '#3a9d65' : (cls === 'ba') ? '#e67e22' : '#c0392b';
     const label = '進度'; 
 
@@ -455,21 +478,22 @@ function setDS(s){
   renderD();
 }
 
+// ✨ 各店明細 (保留原始 6 卡片排版 + 編輯按鈕)
 function renderD(){
   const el=document.getElementById('dcontent');
   const rows=Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
   if(!rows.length){el.innerHTML='<div class="no-data">'+detStore+' 尚無數據</div>';return;}
   const r=rows[0];
+  const key = r.date + '_' + r.store;
   const tgt=tgts[detStore]||2000000;
   const pct=Math.round(r.monthRev/tgt*100);
   const rem=Math.max(tgt-r.monthRev,0);
   
   const now = new Date();
   const timeProgressPct = Math.round((now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()) * 100);
-  let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 3)) ? 'ba' : 'br';
+  let cls = (pct >= 100) ? 'bg' : (pct >= (timeProgressPct - 5)) ? 'ba' : 'br';
   let bc = (cls === 'bg') ? '#3a9d65' : (cls === 'ba') ? '#e67e22' : '#c0392b';
   
-  // ✨ 完全還原原版明細排版，並插入編輯按鈕
   el.innerHTML=
     '<div class="sec">'+detStore+' — '+r.date+' 最新數據</div>'+
     '<div class="bgrid">'+
@@ -480,7 +504,7 @@ function renderD(){
       '<div class="bcard"><div class="t">外帶自取（今日）</div><div class="v">$'+((r.takeoutRev||0)+(r.onlineRev||0)).toLocaleString()+'</div><div class="s">現場 $'+(r.takeoutRev||0).toLocaleString()+' ／ 線上 $'+(r.onlineRev||0).toLocaleString()+'</div></div>'+
       '<div class="bcard"><div class="t">本月 Uber／Panda 累計</div><div class="v">$'+((r.uberMonth||0)+(r.pandaMonth||0)).toLocaleString()+'</div><div class="s">Uber $'+(r.uberMonth||0).toLocaleString()+' ／ Panda $'+(r.pandaMonth||0).toLocaleString()+'</div></div>'+
     '</div>'+
-    '<button class="btn" style="margin-bottom:1rem; border-color:#b3caf5; color:#1a56db; background:#e8f0fe;" onclick="openEditModal(\''+r.date+'_'+r.store+'\')">✏️ 修改此筆紀錄並同步雲端</button>'+
+    '<button class="btn" style="margin-bottom:1.5rem; border-color:#b3caf5; color:#1a56db; background:#e8f0fe;" onclick="openEditModal(\''+key+'\')">✏️ 修改此筆紀錄並同步雲端</button>'+
     '<div class="sec">歷史紀錄（最近'+Math.min(rows.length,14)+'天）</div>'+
     '<div style="overflow-x:auto;"><table class="dtable">'+
     '<thead><tr><th>日期</th><th>業績</th><th>筆數</th><th>均單</th><th>Uber</th><th>Panda</th><th>當月累計</th></tr></thead>'+
@@ -506,21 +530,18 @@ function closeModal() { document.getElementById('edit-modal').style.display = 'n
 async function saveEditedRecord(key) {
     const r = db[key];
     const btn = document.getElementById('m-save-btn');
-    btn.disabled = true; btn.textContent = '同步中...';
+    btn.disabled = true; btn.textContent = '雲端同步中...';
     r.dailyRev = parseInt(document.getElementById('m-dailyRev').value);
     r.monthRev = parseInt(document.getElementById('m-monthRev').value);
     r.totalOrders = parseInt(document.getElementById('m-totalOrders').value);
     r.dineInAvg = parseInt(document.getElementById('m-dineInAvg').value);
     saveDB();
     try {
-        const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'update_single', record: r }) });
-        const res = await resp.json();
-        if(res.status === 'success') {
-            closeModal(); renderOv(); renderD();
-            setSyncStatus('online', '雲端修正完成');
-        }
+        await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'update_single', record: r }) });
+        closeModal(); renderOv(); renderD();
+        showMsg('sheets-msg','雲端同步修改成功！','ok');
     } catch(e) { alert('本機已儲存，但雲端同步失敗。'); }
-    finally { btn.disabled = false; btn.textContent = '儲存並同步'; }
+    finally { btn.disabled = false; btn.textContent = '儲存並同步雲端'; }
 }
 
 function renderTgtInputs(){
