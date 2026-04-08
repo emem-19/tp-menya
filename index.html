@@ -86,7 +86,8 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .pontrack{font-size:12px;color:#3a9d65;}
 
 /* 隱藏在底層的新增功能樣式（不干擾原版面） */
-#sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
+#sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: opacity 0.2s; padding: 4px; border-radius: 4px; }
+#sync-status:hover { opacity: 0.7; background: #e0dfd7; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
@@ -112,7 +113,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 <div class="wrap">
   <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:1.25rem;">
     <h1 style="margin-bottom:0;">麵屋武藏業績儀表板</h1>
-    <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">連線中...</span></div>
+    <div id="sync-status" onclick="loadFromSheets()" title="點擊重新從 Google Sheets 載入資料"><span class="dot offline" id="status-dot"></span> <span id="status-text">連線中...</span></div>
   </div>
 
   <div class="tabs">
@@ -196,7 +197,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 
 <script>
 // --- 全域變數 ---
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbwXh1xZiTzryXBOc5Cm--LTF3_mi9eWB1TweWpVxRUXQDYwgxdalFOioq8x7b_PLlZdGQ/exec";
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx6YkUDZoWpgdqTAvvSweB-H4JFUE3zIwCkYGhUSQEAbDagq6_aNnLW9lBd1Airv1OezQ/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
 let db={}, tgts=Object.assign({},DEF_TGTS);
@@ -361,6 +362,7 @@ async function syncToSheets(){
   finally { btn.disabled=false; }
 }
 
+// ✨ 強制時區校正與空白轉換防呆
 async function loadFromSheets() {
   setSyncStatus('syncing', '載入雲端數據...');
   try {
@@ -369,11 +371,27 @@ async function loadFromSheets() {
     if(data.status==='success' && data.records){
       data.records.forEach(r => { 
         let cleanDate = r.date;
-        if(typeof cleanDate === 'string' && cleanDate.includes('T')) cleanDate = cleanDate.split('T')[0].replace(/-/g,'/');
+        
+        // 修正 Google Sheets UTC 時間落差，轉換為本地正確日期
+        if(typeof cleanDate === 'string' && cleanDate.includes('T')) {
+            const d = new Date(cleanDate);
+            cleanDate = d.getFullYear() + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+        } else if(typeof cleanDate === 'string') {
+            cleanDate = cleanDate.replace(/-/g,'/');
+        }
         r.date = cleanDate;
+        
+        // 強制把雲端空白的欄位轉回數字 0，防止出現 NaN
+        const numFields = ['dailyRev', 'monthRev', 'totalOrders', 'dineInAvg', 'dineInRev', 'dineInOrders', 'dineInPeople', 'uberRev', 'pandaRev', 'uberMonth', 'pandaMonth', 'takeoutRev', 'onlineRev', 'takeoutMonth', 'onlineMonth'];
+        numFields.forEach(f => { r[f] = parseInt(r[f]) || 0; });
+        
+        // 確保布林值正常轉換
+        r.hasPromo = !!r.hasPromo;
+        r.hasLimited = !!r.hasLimited;
+
         if(r.date) db[cleanDate+'_'+r.store]=r; 
       });
-      saveDB(); setSyncStatus('online','雲端數據已更新'); renderOv(); renderDSel(); renderPromo();
+      saveDB(); setSyncStatus('online','雲端數據已同步 (點擊可更新)'); renderOv(); renderDSel(); renderPromo();
     }
   } catch(e) { setSyncStatus('offline','目前僅顯示手機資料'); renderOv(); }
 }
@@ -399,7 +417,6 @@ function renderOv(){
   }).join('');
   
   const rows=Object.values(db).filter(r=>r.date===curDate);
-  document.getElementById('ov-title').textContent=curDate+' 業績總覽';
   const tRev=rows.reduce((s,r)=>s+r.dailyRev,0);
   const tMon=rows.reduce((s,r)=>s+r.monthRev,0);
   const tOrd=rows.reduce((s,r)=>s+r.totalOrders,0);
@@ -545,7 +562,6 @@ function saveTargets(){
   renderOv();
 }
 
-// ✨ 促銷建議 (完全保留您的原始卡片排版)
 function renderPromo(){
   const daysLeft=parseInt(document.getElementById('promo-days').value)||0;
   const grid=document.getElementById('promo-grid');
