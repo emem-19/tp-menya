@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>麵屋武藏業績儀表板</title>
 <style>
+/* 基礎樣式保持一致 */
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif;background:#f5f5f0;color:#1a1a1a;font-size:15px;}
 .wrap{max-width:860px;margin:0 auto;padding:1.25rem 1rem;}
@@ -16,6 +17,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .paste-area{width:100%;min-height:160px;padding:10px;font-size:12px;font-family:monospace;border:0.5px solid #ccc;border-radius:8px;color:#1a1a1a;background:#f0efe8;resize:vertical;}
 .btn{width:100%;padding:10px;border:0.5px solid #ccc;border-radius:8px;background:transparent;font-size:13px;font-weight:500;color:#1a1a1a;cursor:pointer;margin-top:8px;}
 .btn:hover{background:#e8e7e1;}
+.btn.primary{background:#e8f0fe;color:#1a56db;border-color:#b3caf5;}
 .btn:disabled{opacity:0.6;cursor:not-allowed;}
 .msg{font-size:12px;padding:6px 10px;border-radius:8px;margin-top:8px;display:none;}
 .msg.ok{background:#d4edda;color:#155724;}
@@ -39,62 +41,28 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 .bar-wrap{height:5px;background:#f0efe8;border-radius:3px;margin-bottom:6px;overflow:hidden;}
 .bar{height:100%;border-radius:3px;}
 .srow{display:flex;justify-content:space-between;font-size:11px;color:#888;}
-.srow span:last-child{color:#1a1a1a;}
-.no-data{font-size:12px;color:#888;text-align:center;padding:16px 0;}
-.dtable{width:100%;border-collapse:collapse;font-size:12px;}
-.dtable th{text-align:left;padding:6px 8px;color:#888;font-weight:400;border-bottom:0.5px solid #e0dfd7;}
-.dtable td{padding:6px 8px;color:#1a1a1a;border-bottom:0.5px solid #e0dfd7;}
-.dtable tr:last-child td{border-bottom:none;}
-.bgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:1rem;}
-.bcard{background:#fff;border:0.5px solid #e0dfd7;border-radius:12px;padding:12px;}
-.bcard .t{font-size:11px;color:#888;margin-bottom:4px;}
-.bcard .v{font-size:16px;font-weight:500;}
-.bcard .s{font-size:11px;color:#888;margin-top:2px;}
-.ssel-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem;}
-.ssel{font-size:12px;padding:4px 10px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;color:#666;background:transparent;}
-.ssel.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
-.sec{font-size:12px;font-weight:500;color:#666;margin:12px 0 8px;}
-.trow{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
-.date-btn{font-size:11px;padding:3px 8px;border:0.5px solid #ccc;border-radius:8px;cursor:pointer;background:transparent;color:#666;}
-.date-btn.active{background:#e8f0fe;color:#1a56db;border-color:transparent;}
-.pcard{background:#fff;border:0.5px solid #e0dfd7;border-radius:12px;padding:14px;}
-.pcard.urgent{border-color:#c0392b;}
-.pcard-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.pcard-name{font-size:14px;font-weight:500;color:#1a1a1a;}
-.pct-badge{font-size:11px;padding:2px 8px;border-radius:8px;font-weight:500;}
-.pct-ok{background:#d4edda;color:#155724;}
-.pct-warn{background:#fff3cd;color:#856404;}
-.pct-danger{background:#f8d7da;color:#721c24;}
-.pbar-wrap{height:5px;background:#f0efe8;border-radius:3px;margin-bottom:10px;overflow:hidden;}
-.pbar{height:100%;border-radius:3px;}
-.pstat-row{display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap;}
-.pstat{font-size:11px;color:#888;}
-.pstat span{color:#1a1a1a;font-weight:500;}
-.pdivider{height:0.5px;background:#e0dfd7;margin:10px 0;}
-.plabel{font-size:11px;font-weight:500;color:#888;margin-bottom:6px;letter-spacing:.04em;}
-.ptags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
-.ptag{font-size:11px;padding:3px 9px;border-radius:8px;border:0.5px solid transparent;}
-.pt-blue{background:#e8f0fe;color:#174ea6;border-color:#b3caf5;}
-.pt-amber{background:#fff3cd;color:#7a4f00;border-color:#f5c842;}
-.pt-green{background:#d4edda;color:#155724;border-color:#a3d9b1;}
-.pt-purple{background:#f0e6fe;color:#4a1480;border-color:#c084fc;}
-.pt-coral{background:#fde8e4;color:#7f1d1d;border-color:#fca5a5;}
-.pt-teal{background:#d0f4e8;color:#065f46;border-color:#6ee7b7;}
-.preason{font-size:11px;color:#666;line-height:1.5;}
-.pgap{font-size:12px;font-weight:500;color:#1a1a1a;margin-bottom:3px;}
-.pontrack{font-size:12px;color:#3a9d65;}
-/* 同步狀態條 UI */
 #sync-status { font-size: 11px; color: #666; display: flex; align-items: center; gap: 6px; }
 .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .dot.online { background-color: #3a9d65; }
 .dot.syncing { background-color: #e67e22; animation: blink 1s infinite; }
 .dot.offline { background-color: #c0392b; }
 @keyframes blink { 0% {opacity: 1;} 50% {opacity: 0.4;} 100% {opacity: 1;} }
+.time-progress-bar { height: 4px; background: #e0dfd7; border-radius: 2px; margin: 4px 0 12px 0; position: relative; }
+.time-marker { position: absolute; height: 10px; width: 2px; background: #1a1a1a; top: -3px; }
+.time-label { font-size: 10px; color: #666; margin-top: 4px; display: block; }
+
+/* 編輯彈窗樣式 */
+.modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:100; justify-content:center; align-items:center; }
+.modal-content { background:#fff; width:90%; max-width:400px; padding:20px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); }
+.modal-title { font-size:16px; font-weight:500; margin-bottom:15px; border-bottom:0.5px solid #eee; padding-bottom:10px; }
+.form-row { margin-bottom:12px; }
+.form-label { font-size:11px; color:#666; display:block; margin-bottom:4px; }
+.form-input { width:100%; padding:8px; border:0.5px solid #ccc; border-radius:8px; font-size:14px; }
+.modal-btns { display:flex; gap:10px; margin-top:20px; }
 
 @media(max-width:520px){
   .metrics{grid-template-columns:repeat(2,minmax(0,1fr));}
   .sgrid{grid-template-columns:1fr;}
-  .bgrid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -102,7 +70,7 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
 <div class="wrap">
   <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
     <h1 style="margin-bottom:0;">麵屋武藏業績儀表板</h1>
-    <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">未連線至 Google Sheets</span></div>
+    <div id="sync-status"><span class="dot offline" id="status-dot"></span> <span id="status-text">連線中...</span></div>
   </div>
   
   <div class="tabs">
@@ -114,487 +82,252 @@ h1{font-size:17px;font-weight:500;margin-bottom:1.25rem;color:#1a1a1a;}
   </div>
  
   <div class="view show" id="view-overview">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px;">
-      <span style="font-size:13px;font-weight:500;" id="ov-title">尚無數據</span>
-      <div id="date-btns" style="display:flex;gap:5px;flex-wrap:wrap;"></div>
+    <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px; margin-bottom: 4px;">
+            <span style="font-size:14px;font-weight:500;" id="ov-title">載入數據中...</span>
+            <div id="date-btns" style="display:flex;gap:5px;"></div>
+        </div>
+        <div id="time-progress-container"></div>
     </div>
     <div class="metrics" id="ov-metrics"></div>
-    <div class="sec">各店今日業績</div>
-    <div class="sgrid" id="ov-stores"><div class="no-data" style="grid-column:1/-1;">請先在「貼上報表」頁籤貼入 LINE 報表，或等待系統從雲端同步</div></div>
+    <div class="sec">各店當日業績</div>
+    <div class="sgrid" id="ov-stores"><div class="no-data" style="grid-column:1/-1;">正在同步雲端數據...</div></div>
   </div>
  
   <div class="view" id="view-detail">
     <div class="ssel-row" id="dsel"></div>
-    <div id="dcontent"><div class="no-data">請先貼入數據或等待同步</div></div>
+    <div id="dcontent"></div>
   </div>
  
   <div class="view" id="view-input">
-    <div style="font-size:12px;color:#666;margin-bottom:8px;">將 LINE 群組業績報表完整複製貼入（可一次貼多天多店）</div>
-    <textarea class="paste-area" id="paste-box" placeholder="直接貼上 LINE 群組完整訊息..."></textarea>
-    <button class="btn" onclick="doParseAndSave()">1. 解析並儲存至本機</button>
-    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="background:#e8f0fe;color:#1a56db;border-color:#b3caf5;margin-top:6px;">2. 將新數據推送到 Google 試算表 →</button>
+    <textarea class="paste-area" id="paste-box" placeholder="直接貼上 LINE 報表文字..."></textarea>
+    <button class="btn primary" onclick="doParseAndSave()">1. 解析並暫存於手機</button>
+    <button class="btn" id="sheets-btn" onclick="syncToSheets()" style="margin-top:6px;">2. 推送更新至 Google 試算表</button>
     <div class="msg" id="parse-msg"></div>
     <div class="msg" id="sheets-msg"></div>
-    <div style="margin-top:10px;font-size:12px;color:#666;">本機已暫存 <span id="rec-count">0</span> 筆（保留近3個月）｜<button style="font-size:11px;color:#c0392b;background:none;border:none;cursor:pointer;text-decoration:underline;" onclick="clearAll()">清除本機暫存</button></div>
-    <div style="margin-top:8px;font-size:11px;color:#888;">本系統已連接至 Google 試算表資料庫</div>
+    <div style="margin-top:10px;font-size:12px;color:#666;">已暫存 <span id="rec-count">0</span> 筆 | <button style="color:#c0392b;background:none;border:none;cursor:pointer;" onclick="clearAll()">清除暫存</button></div>
   </div>
  
   <div class="view" id="view-settings">
-    <div class="sec">各店月目標業績設定</div>
     <div id="tgt-inputs"></div>
-    <button class="btn" style="margin-top:10px;" onclick="saveTargets()">儲存目標 (目前僅儲存於本機) →</button>
+    <button class="btn" onclick="saveTargets()">儲存目標設定</button>
     <div class="msg" id="tgt-msg"></div>
   </div>
  
   <div class="view" id="view-promo">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-      <span style="font-size:13px;font-weight:500;color:#1a1a1a;">促銷建議分析</span>
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:12px;color:#666;">本月剩餘天數</span>
-        <input type="number" id="promo-days" value="24" min="1" max="31" style="width:60px;font-size:12px;padding:4px 8px;border:0.5px solid #ccc;border-radius:6px;" oninput="renderPromo()">
-      </div>
-    </div>
-    <div id="promo-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
-      <div class="no-data" style="grid-column:1/-1;">請先貼入報表或等待 Google Sheets 同步</div>
-    </div>
+    <div id="promo-grid"></div>
   </div>
 </div>
- 
-<script>
-// ==========================================
-// 🚀 [後端 API 設定區] - 已更新為您的專屬網址
-const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxlK2gWgh-w33orsQZJPnaFmNwlUsf25AmGdlGIJWdKNVmPE9ENM4hzyfehM7F2cyVZYQ/exec"; 
-// ==========================================
 
+<!-- 編輯彈窗 -->
+<div class="modal-overlay" id="edit-modal">
+    <div class="modal-content">
+        <div class="modal-title" id="m-title">修改紀錄</div>
+        <div class="form-row">
+            <label class="form-label">當日業績</label>
+            <input type="number" class="form-input" id="m-dailyRev">
+        </div>
+        <div class="form-row">
+            <label class="form-label">當月累計業績</label>
+            <input type="number" class="form-input" id="m-monthRev">
+        </div>
+        <div class="form-row">
+            <label class="form-label">今日總筆數</label>
+            <input type="number" class="form-input" id="m-totalOrders">
+        </div>
+        <div class="form-row">
+            <label class="form-label">內用均單價</label>
+            <input type="number" class="form-input" id="m-dineInAvg">
+        </div>
+        <div class="modal-btns">
+            <button class="btn" onclick="closeModal()" style="flex:1;">取消</button>
+            <button class="btn primary" id="m-save-btn" style="flex:2;">儲存並同步</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxlK2gWgh-w33orsQZJPnaFmNwlUsf25AmGdlGIJWdKNVmPE9ENM4hzyfehM7F2cyVZYQ/exec";
 const STORES=['神山','本店','光復','信義','台中','武骨'];
 const DEF_TGTS={神山:2100000,本店:2070000,光復:1730000,信義:2300000,台中:1800000,武骨:1940000};
  
 let db={}, tgts=Object.assign({},DEF_TGTS);
 try{
-  const saved=localStorage.getItem('musashi_db');
-  if(saved) db=JSON.parse(saved);
-  const savedTgts=localStorage.getItem('musashi_tgts');
-  if(savedTgts) tgts=JSON.parse(savedTgts);
+  const s=localStorage.getItem('musashi_db');if(s)db=JSON.parse(s);
+  const t=localStorage.getItem('musashi_tgts');if(t)tgts=JSON.parse(t);
 }catch(e){}
  
-function saveDB(){
-  try{localStorage.setItem('musashi_db',JSON.stringify(db));}catch(e){}
-}
-function saveTgtsLS(){
-  try{localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}catch(e){}
-}
+function saveDB(){localStorage.setItem('musashi_db',JSON.stringify(db));}
+function saveTgtsLS(){localStorage.setItem('musashi_tgts',JSON.stringify(tgts));}
  
-// --- [文字報表解析邏輯] ---
-function norm(t){
-  return t
-    .replace(/\r\n/g,'\n').replace(/\r/g,'\n')
-    .replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0))
-    .replace(/[\u200B\u200C\u200D\uFEFF]/g,'')
-    .replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats')
-    .replace(/Uber\s*Eats/gi,'UberEats')
-    .replace(/Uber\s*Eat\b/gi,'UberEats')
-    .replace(/《Foodpanda》/g,'Foodpanda')
-    .replace(/《UBER》/gi,'UberEats');
-}
- 
+function norm(t){return t.replace(/：/g,':').replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0)).replace(/Uber\s*Ea[ts:]*\b/gi,'UberEats').replace(/《Foodpanda》/g,'Foodpanda');}
 function parseDate(raw){
-  raw=(raw||'').trim().replace(/：/g,':');
-  let m;
-  m=raw.match(/(\d{1,2})[月\/](\d{1,2})/);
-  if(m){
-    const mo=parseInt(m[1]),da=parseInt(m[2]);
-    const now=new Date();
-    const yr=(mo>now.getMonth()+1&&now.getMonth()+1<=3)?now.getFullYear()-1:now.getFullYear();
-    return yr+'/'+String(mo).padStart(2,'0')+'/'+String(da).padStart(2,'0');
-  }
-  return null;
-}
- 
-function parseStore(raw){
-  return (raw||'').replace(/[\s\u3000]*[\(（【].*/,'').trim();
-}
- 
-function getNum(text,pats){
-  for(const p of pats){
-    const m=text.match(p);
-    if(m){const v=parseInt(String(m[1]).replace(/[,\s]/g,''));if(!isNaN(v))return v;}
-  }
-  return 0;
-}
- 
-function splitBlocks(text){
-  text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
-  const lines=text.split('\n');
-  const blocks=[];
-  let cur=[];
-  for(const ln of lines){
-    const t=ln.trim();
-    if(/^\d{4}\.\d{2}\.\d{2}/.test(t)) continue;
-    if(/已收回訊息/.test(t)) continue;
-    const isTimestamp=/^\d{1,2}:\d{2}\s+\S/.test(t)
-      &&!/^店名\s*[:：]/.test(t)
-      &&!/^日期\s*[:：]/.test(t);
-    if(isTimestamp){
-      if(cur.length>0){blocks.push(cur.join('\n'));cur=[];}
-      continue;
+    const m=raw.match(/(\d{1,2})[月\/](\d{1,2})/);
+    if(m){
+        const mo=parseInt(m[1]),da=parseInt(m[2]),now=new Date();
+        const yr=(mo>now.getMonth()+1 && now.getMonth()+1<=3)?now.getFullYear()-1:now.getFullYear();
+        return yr+'/'+String(mo).padStart(2,'0')+'/'+String(da).padStart(2,'0');
     }
-    cur.push(ln);
-  }
-  if(cur.length>0) blocks.push(cur.join('\n'));
-  return blocks.filter(b=>/店名\s*[:：]/.test(b)&&/當日業績\s*[:：]/.test(b));
+    return null;
 }
- 
+function getNum(text,pats){for(const p of pats){const m=text.match(p);if(m){const v=parseInt(m[1].replace(/[,\s]/g,''));if(!isNaN(v))return v;}}return 0;}
+
+function splitBlocks(text){
+  const blocks = []; let cur = [];
+  text.split('\n').forEach(ln => {
+    if(/^\d{1,2}:\d{2}\s+/.test(ln.trim()) && cur.length > 0) { blocks.push(cur.join('\n')); cur = []; }
+    cur.push(ln);
+  });
+  if(cur.length > 0) blocks.push(cur.join('\n'));
+  return blocks.filter(b => b.includes('店名') && b.includes('當日業績'));
+}
+
 function parseBlock(raw){
-  const text=norm(raw);
-  const dateRaw=(text.match(/日期\s*[:]\s*([^\n]+)/)||[])[1];
-  const storeRaw=(text.match(/店名\s*[:]\s*([^\n]+)/)||[])[1];
-  if(!dateRaw||!storeRaw) return null;
-  const date=parseDate(dateRaw);
-  const store=parseStore(storeRaw);
-  if(!date||!store) return null;
-  const uIdx=text.indexOf('UberEats');
-  const pIdx=text.indexOf('Foodpanda');
-  const uBlock=uIdx>=0?text.slice(uIdx,pIdx>uIdx?pIdx:uIdx+300):'';
-  const pBlock=pIdx>=0?text.slice(pIdx,pIdx+250):'';
-  return{
-    date,store,
-    totalOrders:getNum(text,[/當日筆數\s*[:]\s*(\d+)/]),
-    dailyRev:getNum(text,[/當日業績\s*[:]\s*(\d+)/]),
-    monthRev:getNum(text,[/當月累計業績\s*[:]\s*(\d+)/]),
-    dineInOrders:getNum(text,[/內用筆數\s*[:]\s*(\d+)/]),
-    dineInPeople:getNum(text,[/內用人數\s*[:]\s*(\d+)/]),
-    dineInAvg:getNum(text,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
-    dineInRev:getNum(text,[/《內用》[\s\S]{0,400}?當日金額\s*[:]\s*(\d+)/]),
-    takeoutRev:getNum(text,[/現場[^》\n]*》?[\s\S]{0,200}?當日金額\s*[:]\s*(\d+)/]),
-    takeoutMonth:getNum(text,[/現場[^》\n]*》?[\s\S]{0,200}?當月累計金額\s*[:]\s*(\d+)/]),
-    onlineRev:getNum(text,[/線上點餐[^》\n]*》?[\s\S]{0,200}?當日金額\s*[:]\s*(\d+)/]),
-    onlineMonth:getNum(text,[/線上點餐[^》\n]*》?[\s\S]{0,200}?當月累計金額\s*[:]\s*(\d+)/]),
-    uberOrders:getNum(uBlock,[/外送筆數\s*[:]\s*(\d+)/,/當日筆數\s*[:]\s*(\d+)/]),
-    uberRev:getNum(uBlock,[/當日金額\s*[:]\s*(\d+)/]),
-    uberMonth:getNum(uBlock,[/累[計積]金額\s*[:]\s*(\d+)/]),
-    pandaOrders:getNum(pBlock,[/外送筆數\s*[:]\s*(\d+)/,/當日筆數\s*[:]\s*(\d+)/]),
-    pandaRev:getNum(pBlock,[/當日金額\s*[:]\s*(\d+)/]),
-    pandaMonth:getNum(pBlock,[/累[計積]金額\s*[:]\s*(\d+)/]),
+  const t = norm(raw);
+  const dRaw=(t.match(/日期\s*[:]\s*([^\n]+)/)||[])[1], sRaw=(t.match(/店名\s*[:]\s*([^\n]+)/)||[])[1];
+  if(!dRaw||!sRaw)return null;
+  const store = sRaw.trim().split(/[（(【]/)[0];
+  const date = parseDate(dRaw);
+  return {
+    date, store,
+    dailyRev:getNum(t,[/當日業績\s*[:]\s*(\d+)/]),
+    monthRev:getNum(t,[/當月累計業績\s*[:]\s*(\d+)/]),
+    totalOrders:getNum(t,[/當日筆數\s*[:]\s*(\d+)/]),
+    dineInRev:getNum(t,[/《內用》[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+    dineInAvg:getNum(t,[/當日均單\(人\)\s*[:]\s*(\d+)/]),
+    uberRev:getNum(t,[/UberEats[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+    pandaRev:getNum(t,[/Foodpanda[\s\S]*?當日金額\s*[:]\s*(\d+)/]),
+    onlineRev:getNum(t,[/線上點餐[^》]*?當日金額\s*[:]\s*(\d+)/])
   };
 }
- 
-function parseAll(text){
-  const blocks=splitBlocks(text);
-  const res=[],seen=new Set();
-  for(const b of blocks){
-    const r=parseBlock(b);
-    if(!r) continue;
-    const k=r.date+'_'+r.store;
-    if(seen.has(k)) continue;
-    seen.add(k);res.push(r);
-  }
-  return res;
-}
- 
-function prune(){
-  const now=new Date();
-  const cut=new Date(now.getFullYear(),now.getMonth()-3,now.getDate());
-  const cutStr=cut.getFullYear()+'/'+String(cut.getMonth()+1).padStart(2,'0')+'/'+String(cut.getDate()).padStart(2,'0');
-  Object.keys(db).forEach(k=>{if(db[k].date<cutStr)delete db[k];});
-}
- 
+
 function doParseAndSave(){
-  const text=document.getElementById('paste-box').value.trim();
-  if(!text){showMsg('parse-msg','請先貼入報表文字','err');return;}
-  const res=parseAll(text);
-  if(!res.length){showMsg('parse-msg','解析失敗：找不到有效報表（需包含「店名:」和「當日業績:」）','err');return;}
-  res.forEach(r=>{db[r.date+'_'+r.store]=r;});
-  prune();
-  saveDB();
-  document.getElementById('rec-count').textContent=Object.keys(db).length;
+  const text=document.getElementById('paste-box').value;
+  const blocks=splitBlocks(text); let count=0;
+  blocks.forEach(b=>{const r=parseBlock(b); if(r){db[r.date+'_'+r.store]=r; count++;}});
+  saveDB(); document.getElementById('rec-count').textContent=Object.keys(db).length;
   document.getElementById('paste-box').value='';
-  showMsg('parse-msg','成功解析 '+res.length+' 筆並儲存於本機。記得按下方按鈕推送到 Google Sheets！','ok');
-  renderOv();renderDSel();renderPromo();
-}
- 
-function clearAll(){
-  if(!confirm('確定清除本機所有數據？這不會刪除雲端上的資料。'))return;
-  db={};saveDB();
-  document.getElementById('rec-count').textContent=0;
-  renderOv();renderDSel();
-}
- 
-function showMsg(id,t,type){
-  const el=document.getElementById(id);
-  el.textContent=t;el.className='msg '+type;el.style.display='block';
-  setTimeout(()=>{el.style.display='none';},5000);
-}
- 
-function allDates(){return[...new Set(Object.values(db).map(r=>r.date))].sort().reverse();}
- 
-let curDate='';
- 
-// --- [UI 渲染邏輯] ---
-function renderOv(){
-  const dates=allDates();
-  const btnEl=document.getElementById('date-btns');
-  if(!dates.length){
-    document.getElementById('ov-title').textContent='尚無數據';
-    document.getElementById('ov-metrics').innerHTML='<div class="mc"><div class="lbl">今日總業績</div><div class="val">—</div></div><div class="mc"><div class="lbl">當月累計</div><div class="val">—</div></div><div class="mc"><div class="lbl">今日筆數</div><div class="val">—</div></div><div class="mc"><div class="lbl">已回報</div><div class="val">—</div></div>';
-    document.getElementById('ov-stores').innerHTML='<div class="no-data" style="grid-column:1/-1;">請先在「貼上報表」貼入 LINE 報表，或等待系統連線同步</div>';
-    btnEl.innerHTML='';return;
-  }
-  if(!curDate||!dates.includes(curDate))curDate=dates[0];
-  btnEl.innerHTML=dates.slice(0,7).map(d=>'<button class="date-btn'+(d===curDate?' active':'')+'" onclick="setDate(\''+d+'\')">'+d.slice(5)+'</button>').join('');
-  const rows=Object.values(db).filter(r=>r.date===curDate);
-  document.getElementById('ov-title').textContent=curDate+' 業績總覽';
-  const tRev=rows.reduce((s,r)=>s+r.dailyRev,0);
-  const tMon=rows.reduce((s,r)=>s+r.monthRev,0);
-  const tOrd=rows.reduce((s,r)=>s+r.totalOrders,0);
-  const unrep=STORES.filter(s=>!rows.find(r=>r.store===s));
-  document.getElementById('ov-metrics').innerHTML=
-    '<div class="mc"><div class="lbl">今日總業績</div><div class="val">$'+tRev.toLocaleString()+'</div><div class="sub">'+rows.length+'店回報</div></div>'+
-    '<div class="mc"><div class="lbl">當月累計（加總）</div><div class="val">'+(tMon/10000).toFixed(1)+'萬</div></div>'+
-    '<div class="mc"><div class="lbl">今日總筆數</div><div class="val">'+tOrd+'</div><div class="sub">全通路</div></div>'+
-    '<div class="mc"><div class="lbl">已回報</div><div class="val">'+rows.length+'/'+STORES.length+'</div><div class="sub">'+(unrep.length?'未：'+unrep.join('、'):'全數到齊 ✓')+'</div></div>';
-  document.getElementById('ov-stores').innerHTML=STORES.map(s=>{
-    const r=rows.find(x=>x.store===s);
-    if(!r)return '<div class="scard" onclick="goDetail(\''+s+'\')"><div class="scard-top"><span class="sname">'+s+'</span><span class="badge bx">未回報</span></div><div class="no-data" style="font-size:11px;padding:8px 0;">尚未收到今日報表</div></div>';
-    const tgt=tgts[s]||2000000;
-    const pct=Math.min(Math.round(r.monthRev/tgt*100),100);
-    const bc=pct>=100?'#3a9d65':pct>=70?'#e67e22':'#c0392b';
-    const cls=pct>=100?'bg':pct>=70?'ba':'br';
-    const label=pct>=100?'達標':pct>=70?'進行中':'落後';
-    const dP=r.dailyRev?Math.round(r.dineInRev/r.dailyRev*100):0;
-    const uP=r.dailyRev?Math.round(r.uberRev/r.dailyRev*100):0;
-    const pP=r.dailyRev?Math.round(r.pandaRev/r.dailyRev*100):0;
-    return '<div class="scard" onclick="goDetail(\''+s+'\')">'
-      +'<div class="scard-top"><span class="sname">'+s+'</span><span class="badge '+cls+'">'+label+' '+pct+'%</span></div>'
-      +'<div class="srev">$'+r.dailyRev.toLocaleString()+'</div>'
-      +'<div class="bar-wrap"><div class="bar" style="width:'+pct+'%;background:'+bc+';"></div></div>'
-      +'<div class="srow"><span>當月累計</span><span>$'+r.monthRev.toLocaleString()+'</span></div>'
-      +'<div class="srow"><span>今日筆數</span><span>'+r.totalOrders+'筆</span></div>'
-      +'<div class="srow"><span>內用/Uber/Panda</span><span>'+dP+'%/'+uP+'%/'+pP+'%</span></div>'
-      +'</div>';
-  }).join('');
-}
- 
-function setDate(d){curDate=d;renderOv();}
-function goDetail(s){sw('detail');setDS(s);}
-let detStore=STORES[0];
-function renderDSel(){
-  document.getElementById('dsel').innerHTML=STORES.map(s=>'<button class="ssel'+(s===detStore?' active':'')+'" onclick="setDS(\''+s+'\')">'+s+'</button>').join('');
-  renderD();
-}
-function setDS(s){
-  detStore=s;
-  document.querySelectorAll('.ssel').forEach(el=>el.classList.toggle('active',el.textContent===s));
-  renderD();
-}
-function renderD(){
-  const el=document.getElementById('dcontent');
-  const rows=Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
-  if(!rows.length){el.innerHTML='<div class="no-data">'+detStore+' 尚無數據</div>';return;}
-  const r=rows[0];
-  const tgt=tgts[detStore]||2000000;
-  const pct=Math.round(r.monthRev/tgt*100);
-  const rem=Math.max(tgt-r.monthRev,0);
-  const bc=pct>=100?'#3a9d65':pct>=70?'#e67e22':'#c0392b';
-  el.innerHTML=
-    '<div class="sec">'+detStore+' — '+r.date+' 最新數據</div>'+
-    '<div class="bgrid">'+
-      '<div class="bcard"><div class="t">今日業績</div><div class="v">$'+r.dailyRev.toLocaleString()+'</div><div class="s">'+r.totalOrders+'筆</div></div>'+
-      '<div class="bcard"><div class="t">當月達成率</div><div class="v" style="color:'+bc+';">'+pct+'%</div><div class="s">累計 $'+r.monthRev.toLocaleString()+' ／ 目標 $'+tgt.toLocaleString()+'</div><div class="s">還差 $'+rem.toLocaleString()+'</div></div>'+
-      '<div class="bcard"><div class="t">內用</div><div class="v">$'+r.dineInRev.toLocaleString()+'</div><div class="s">'+r.dineInOrders+'筆 ／ '+r.dineInPeople+'人 ／ 均單$'+r.dineInAvg+'</div></div>'+
-      '<div class="bcard"><div class="t">外送平台（今日）</div><div class="v">$'+(r.uberRev+r.pandaRev).toLocaleString()+'</div><div class="s">Uber $'+r.uberRev.toLocaleString()+' ／ Panda $'+r.pandaRev.toLocaleString()+'</div></div>'+
-      '<div class="bcard"><div class="t">外帶自取（今日）</div><div class="v">$'+(r.takeoutRev+r.onlineRev).toLocaleString()+'</div><div class="s">現場 $'+r.takeoutRev.toLocaleString()+' ／ 線上 $'+r.onlineRev.toLocaleString()+'</div></div>'+
-      '<div class="bcard"><div class="t">本月 Uber／Panda 累計</div><div class="v">$'+(r.uberMonth+r.pandaMonth).toLocaleString()+'</div><div class="s">Uber $'+r.uberMonth.toLocaleString()+' ／ Panda $'+r.pandaMonth.toLocaleString()+'</div></div>'+
-    '</div>'+
-    '<div class="sec">歷史紀錄（最近'+Math.min(rows.length,14)+'天）</div>'+
-    '<div style="overflow-x:auto;"><table class="dtable">'+
-    '<thead><tr><th>日期</th><th>業績</th><th>筆數</th><th>均單</th><th>Uber</th><th>Panda</th><th>當月累計</th></tr></thead>'+
-    '<tbody>'+rows.slice(0,14).map(x=>
-      '<tr><td>'+x.date.slice(5)+'</td><td>$'+x.dailyRev.toLocaleString()+'</td><td>'+x.totalOrders+'</td><td>$'+x.dineInAvg+'</td><td>$'+x.uberRev.toLocaleString()+'</td><td>$'+x.pandaRev.toLocaleString()+'</td><td>$'+x.monthRev.toLocaleString()+'</td></tr>'
-    ).join('')+
-    '</tbody></table></div>';
-}
-function renderTgtInputs(){
-  document.getElementById('tgt-inputs').innerHTML=STORES.map(s=>
-    '<div class="trow"><span style="font-size:12px;color:#666;width:40px;">'+s+'</span>'+
-    '<input type="number" id="tgt_'+s+'" value="'+tgts[s]+'" step="10000" style="width:140px;font-size:12px;padding:4px 8px;border:0.5px solid #ccc;border-radius:6px;"/>'+
-    '<span style="font-size:11px;color:#888;">元</span></div>'
-  ).join('');
-}
-function saveTargets(){
-  STORES.forEach(s=>{const v=parseInt(document.getElementById('tgt_'+s).value);if(v>0)tgts[s]=v;});
-  saveTgtsLS();
-  showMsg('tgt-msg','目標已儲存！','ok');
+  showMsg('parse-msg','成功解析 '+count+' 筆資料！','ok');
   renderOv();
 }
-function renderPromo(){
-  const daysLeft=parseInt(document.getElementById('promo-days').value)||24;
-  const grid=document.getElementById('promo-grid');
-  const latestByStore={};
-  Object.values(db).forEach(r=>{
-    if(!latestByStore[r.store]||r.date>latestByStore[r.store].date) latestByStore[r.store]=r;
-  });
-  const storeData=STORES.map(s=>latestByStore[s]).filter(Boolean);
-  if(!storeData.length){
-    grid.innerHTML='<div class="no-data" style="grid-column:1/-1;">請先在「貼上報表」頁籤貼入 LINE 報表</div>';
-    return;
-  }
-  grid.innerHTML=STORES.map(s=>{
-    const r=latestByStore[s];
-    if(!r) return '<div class="pcard"><div class="pcard-top"><span class="pcard-name">'+s+'</span><span class="pct-badge" style="background:#f0efe8;color:#666;">未回報</span></div><div style="font-size:11px;color:#888;">尚無數據</div></div>';
-    const tgt=tgts[s]||2000000;
-    const pct=Math.round(r.monthRev/tgt*100);
-    const gap=Math.max(tgt-r.monthRev,0);
-    const dailyNeed=daysLeft>0?Math.round(gap/daysLeft):0;
-    const dates=Object.values(db).filter(x=>x.store===s).sort((a,b)=>b.date.localeCompare(a.date));
-    const avgDaily=dates.length>1?(dates[0].monthRev-dates[dates.length-1].monthRev+dates[dates.length-1].dailyRev)/dates.length:r.dailyRev;
-    const barColor=pct>=100?'#3a9d65':pct>=80?'#e67e22':'#c0392b';
-    const badgeCls=pct>=100?'pct-ok':pct>=80?'pct-warn':'pct-danger';
-    const isUrgent=pct<80;
-    const promos=getPromoSuggestions(pct,gap,daysLeft,Math.round(avgDaily));
-    const pctCapped=Math.min(pct,100);
-    return '<div class="pcard'+(isUrgent?' urgent':'')+'">'+
-      '<div class="pcard-top"><span class="pcard-name">'+s+'</span><span class="pct-badge '+badgeCls+'">'+pct+'%</span></div>'+
-      '<div class="pbar-wrap"><div class="pbar" style="width:'+pctCapped+'%;background:'+barColor+';"></div></div>'+
-      '<div class="pstat-row">'+
-        '<div class="pstat">累計 <span>$'+r.monthRev.toLocaleString()+'</span></div>'+
-        '<div class="pstat">目標 <span>$'+tgt.toLocaleString()+'</span></div>'+
-        '<div class="pstat">剩 <span>'+daysLeft+'天</span></div>'+
-      '</div>'+
-      '<div class="pdivider"></div>'+
-      (pct>=100?
-        '<div class="pontrack">已達標！繼續維持現有策略</div>'
-      :
-        '<div class="pgap">還差 $'+gap.toLocaleString()+' ／ 每日需達 $'+dailyNeed.toLocaleString()+'</div>'+
-        '<div style="font-size:11px;color:#888;margin-bottom:10px;">目前日均 $'+Math.round(avgDaily).toLocaleString()+'，需提升 '+Math.max(0,Math.round((dailyNeed/Math.max(avgDaily,1)-1)*100))+'%</div>'+
-        '<div class="plabel">建議促銷方案</div>'+
-        '<div class="ptags">'+promos.map(p=>'<span class="ptag '+p.style+'" title="'+p.reason+'">'+p.tag+'</span>').join('')+'</div>'+
-        '<div class="preason">'+promos[0].reason+'</div>'
-      )+
-    '</div>';
+
+async function syncToSheets(){
+  const btn=document.getElementById('sheets-btn'); btn.disabled=true;
+  setSyncStatus('syncing', '正在同步至雲端...');
+  try {
+    const resp = await fetch(GAS_API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'sync_data', records: Object.values(db) }) });
+    const res = await resp.json();
+    if(res.status==='success'){ showMsg('sheets-msg','同步成功！','ok'); setSyncStatus('online','已與雲端同步'); }
+  } catch(e) { showMsg('sheets-msg','同步失敗','err'); setSyncStatus('offline','同步失敗'); }
+  finally { btn.disabled=false; }
+}
+
+async function loadFromSheets() {
+  setSyncStatus('syncing', '正在連線...');
+  try {
+    const resp = await fetch(GAS_API_URL+'?action=get_latest');
+    const data = await resp.json();
+    if(data.status==='success' && data.records){
+      data.records.forEach(r => { 
+        let cleanDate = r.date;
+        if(typeof cleanDate === 'string' && cleanDate.includes('T')) cleanDate = cleanDate.split('T')[0].replace(/-/g,'/');
+        r.date = cleanDate;
+        db[cleanDate+'_'+r.store]=r; 
+      });
+      saveDB(); renderOv(); setSyncStatus('online','已更新雲端數據');
+    }
+  } catch(e) { setSyncStatus('offline','連線失敗'); }
+}
+
+function renderOv(){
+  const dates=allDates(); if(!dates.length){ document.getElementById('ov-title').textContent='尚無數據'; return; }
+  if(!curDate||!dates.includes(curDate)) curDate=dates[0];
+  const now = new Date(), totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate(), currentDay = now.getDate();
+  const timeProgressPct = Math.round((currentDay / totalDays) * 100);
+  document.getElementById('ov-title').textContent=curDate + ' 業績總覽';
+  document.getElementById('date-btns').innerHTML=dates.slice(0,5).map(d=>`<button class="date-btn ${d===curDate?'active':''}" onclick="setDate('${d}')">${d.slice(5)}</button>`).join('');
+  document.getElementById('time-progress-container').innerHTML = `<div class="time-progress-bar"><div class="time-marker" style="left: ${timeProgressPct}%"></div></div><span class="time-label">⏳ 本月時間進度：${timeProgressPct}% (${currentDay}/${totalDays}天)</span>`;
+  const rows = Object.values(db).filter(r=>r.date===curDate);
+  const tRev = rows.reduce((s,r)=>s+r.dailyRev,0);
+  const tMon = rows.reduce((s,r)=>s+r.monthRev,0);
+  document.getElementById('ov-metrics').innerHTML= `<div class="mc"><div class="lbl">今日總營收</div><div class="val">$${tRev.toLocaleString()}</div><div class="sub">${rows.length}店回報</div></div><div class="mc"><div class="lbl">當月累計</div><div class="val">${(tMon/10000).toFixed(1)}萬</div></div>`;
+  document.getElementById('ov-stores').innerHTML=STORES.map(s=>{
+    const r=rows.find(x=>x.store===s); if(!r) return `<div class="scard"><div class="sname">${s}</div><div class="no-data">尚未回報</div></div>`;
+    const pct = Math.min(100, Math.round(r.monthRev/tgts[s]*100));
+    let cls = pct >= (timeProgressPct - 3) ? (pct>=100?'bg':'ba') : 'br';
+    return `<div class="scard" onclick="sw('detail');setDS('${s}')"><div class="scard-top"><span class="sname">${s}</span><span class="badge ${cls}">進度 ${pct}%</span></div><div class="srev">$${r.dailyRev.toLocaleString()}</div><div class="bar-wrap"><div class="bar" style="width:${pct}%; background:${pct>=100?'#3a9d65':pct>=70?'#e67e22':'#c0392b'};"></div></div></div>`;
   }).join('');
 }
-function getPromoSuggestions(pct,gap,daysLeft,avgDaily){
-  if(pct>=100 || gap <= 0) return [];
-  const dailyNeed = daysLeft > 0 ? gap / daysLeft : gap;
-  const boostRatio = avgDaily > 0 ? dailyNeed / avgDaily : 2; 
-  const isEmergency = daysLeft <= 7;
-  const suggestions = [];
 
-  if (boostRatio <= 1.1) {
-    suggestions.push({tag:'推廣加價購', style:'pt-blue', reason:'每日業績缺口小於10%，加強門市人員推廣高毛利小菜、飲料或配料即可輕鬆補足。'});
-    suggestions.push({tag:'優化點餐引導', style:'pt-teal', reason:'不需打折，透過話術引導客人升級大碗或加點套餐，保護毛利。'});
-  } else if (boostRatio <= 1.3) {
-    suggestions.push({tag:'限定品項特價', style:'pt-amber', reason:'業績需提升10~30%，可針對單一主力或高毛利品項做快閃特價，吸引猶豫客。'});
-    suggestions.push({tag:'外送平台滿額贈', style:'pt-purple', reason:'透過外送平台小幅讓利（如滿300送小菜）快速拉高單筆消費金額。'});
-  } else {
-    suggestions.push({tag:'外送平台強力折扣', style:'pt-coral', reason:'業績需大幅提升30%以上，建議立即啟動 Uber/Panda 滿減活動快速衝單。'});
-    suggestions.push({tag:'指定主餐買一送一', style:'pt-coral', reason:'需要強效誘因大幅提高來客數與轉換率，帶動整體營收規模。'});
-  }
-
-  if (isEmergency && pct < 85) {
-    suggestions.push({tag:'月底限時急救包', style:'pt-coral', reason:`只剩 ${daysLeft} 天且達成率落後，建議緊急發放 LINE 熟客高額折扣券，或於粉專下急單廣告。`});
-  } else if (daysLeft >= 20 && pct < 30) {
-    suggestions.push({tag:'週間常態回流', style:'pt-green', reason:'月初進度不如預期，應及早發布本月「特定平日」優惠，建立長線回流機制。'});
-  }
-  return suggestions.slice(0, 4);
+let detStore=STORES[0];
+function setDS(s){ detStore=s; renderD(); }
+function renderD(){
+  const rows = Object.values(db).filter(r=>r.store===detStore).sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('dsel').innerHTML=STORES.map(s=>`<button class="ssel ${s===detStore?'active':''}" onclick="setDS('${s}')">${s}</button>`).join('');
+  if(!rows.length){ document.getElementById('dcontent').innerHTML='<div class="no-data">尚無資料</div>'; return; }
+  const r=rows[0];
+  const key = r.date + '_' + r.store;
+  document.getElementById('dcontent').innerHTML=`
+    <div class="bgrid">
+        <div class="bcard"><div class="t">今日營收</div><div class="v">$${r.dailyRev.toLocaleString()}</div></div>
+        <div class="bcard"><div class="t">累計營收</div><div class="v">$${r.monthRev.toLocaleString()}</div></div>
+        <div class="bcard"><div class="t">今日筆數</div><div class="v">${r.totalOrders}筆</div></div>
+        <div class="bcard"><div class="t">內用均單</div><div class="v">$${r.dineInAvg}</div></div>
+    </div>
+    <button class="btn" onclick="openEditModal('${key}')">✏️ 修改這筆紀錄</button>
+  `;
 }
 
-// --- [Google Sheets 同步邏輯] ---
-async function syncToSheets(){
-  if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID_HERE")) {
-    showMsg('sheets-msg','請先在程式碼設定 GAS_API_URL','err');
-    return;
-  }
-  const allRows=Object.values(db);
-  if(!allRows.length){showMsg('sheets-msg','尚無數據可同步','err');return;}
-  
-  const btn=document.getElementById('sheets-btn');
-  btn.textContent='正在推送到雲端...';btn.disabled=true;
-  setSyncStatus('syncing', '正在同步至 Google Sheets...');
-
-  try{
-    // 透過 POST 將資料傳送給 Google Apps Script
-    const resp = await fetch(GAS_API_URL, {
-      method: 'POST',
-      // GAS 接收 JSON 通常使用 text/plain 以避免複雜的 CORS 預檢請求
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
-      body: JSON.stringify({ action: 'sync_data', records: allRows })
-    });
-    
-    if (!resp.ok) throw new Error('伺服器無回應');
-    const data = await resp.json();
-    
-    if(data.status === 'success') {
-      showMsg('sheets-msg',`成功同步 ${allRows.length} 筆到 Google Sheets！`, 'ok');
-      setSyncStatus('online', '已與 Google Sheets 同步');
-    } else {
-      throw new Error(data.message || '未知錯誤');
-    }
-  }catch(e){
-    console.error(e);
-    showMsg('sheets-msg','無法連線到 Google Sheets。請確認 GAS API 是否設定正確。','err');
-    setSyncStatus('offline', '同步失敗');
-  }finally{
-    btn.textContent='2. 將新數據推送到 Google 試算表 →';btn.disabled=false;
-  }
+// ✨ 編輯彈窗功能
+function openEditModal(key) {
+    const r = db[key];
+    document.getElementById('m-title').textContent = `${r.store} (${r.date})`;
+    document.getElementById('m-dailyRev').value = r.dailyRev;
+    document.getElementById('m-monthRev').value = r.monthRev;
+    document.getElementById('m-totalOrders').value = r.totalOrders;
+    document.getElementById('m-dineInAvg').value = r.dineInAvg;
+    document.getElementById('edit-modal').style.display = 'flex';
+    document.getElementById('m-save-btn').onclick = () => saveEditedRecord(key);
 }
 
-// --- 找到這個函數並覆蓋 ---
-async function loadFromSheets() {
-  if (!GAS_API_URL || GAS_API_URL.includes("YOUR_SCRIPT_ID_HERE")) {
-    setSyncStatus('offline', '未設定 API 網址，僅顯示本機數據');
-    return;
-  }
-  setSyncStatus('syncing', '正在從 Google Sheets 載入數據...');
-  try {
-    const resp = await fetch(`${GAS_API_URL}?action=get_latest`);
-    if (!resp.ok) throw new Error('伺服器無回應');
+function closeModal() { document.getElementById('edit-modal').style.display = 'none'; }
+
+async function saveEditedRecord(key) {
+    const r = db[key];
+    const btn = document.getElementById('m-save-btn');
+    btn.disabled = true; btn.textContent = '儲存中...';
     
-    const data = await resp.json();
-    if (data.status === 'success' && data.records && data.records.length > 0) {
-        data.records.forEach(r => {
-            // ✨ 關鍵修正：處理從雲端抓下來的 ISO 日期字串
-            let cleanDate = r.date;
-            if (typeof cleanDate === 'string' && cleanDate.includes('T')) {
-                // 如果是 2026-04-05T16:00... 格式，只取前 10 個字並把 - 換成 /
-                cleanDate = cleanDate.split('T')[0].replace(/-/g, '/');
-            }
-            r.date = cleanDate; // 更新回資料物件中
-            db[cleanDate + '_' + r.store] = r;
+    // 更新本地數據
+    r.dailyRev = parseInt(document.getElementById('m-dailyRev').value);
+    r.monthRev = parseInt(document.getElementById('m-monthRev').value);
+    r.totalOrders = parseInt(document.getElementById('m-totalOrders').value);
+    r.dineInAvg = parseInt(document.getElementById('m-dineInAvg').value);
+    
+    saveDB();
+    
+    try {
+        // 同步單筆到雲端
+        const resp = await fetch(GAS_API_URL, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'text/plain' }, 
+            body: JSON.stringify({ action: 'update_single', record: r }) 
         });
-        saveDB();
-        renderOv(); renderDSel(); renderPromo();
-        setSyncStatus('online', '已載入最新雲端數據');
-    } else {
-        setSyncStatus('online', '雲端尚無數據');
-    }
-  } catch (error) {
-    console.warn("無法從 Google Sheets 載入資料", error);
-    setSyncStatus('offline', '僅顯示本機暫存數據');
-  }
+        const res = await resp.json();
+        if(res.status === 'success') {
+            closeModal(); renderOv(); renderD();
+            setSyncStatus('online', '已同步修改至雲端');
+        }
+    } catch(e) { alert('同步雲端失敗，但本機已暫存修改。'); }
+    finally { btn.disabled = false; btn.textContent = '儲存並同步'; }
 }
 
-function setSyncStatus(status, text) {
-    const dot = document.getElementById('status-dot');
-    const txt = document.getElementById('status-text');
-    dot.className = `dot ${status}`;
-    txt.textContent = text;
-}
- 
-function sw(name){
-  const names=['overview','detail','input','settings','promo'];
-  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',names[i]===name));
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('show'));
-  document.getElementById('view-'+name).classList.add('show');
-  if(name==='detail')renderDSel();
-  if(name==='settings')renderTgtInputs();
-  if(name==='promo')renderPromo();
-}
- 
-document.getElementById('rec-count').textContent=Object.keys(db).length;
-renderOv();
-renderDSel();
-loadFromSheets(); 
+function sw(n){ document.querySelectorAll('.view').forEach(v=>v.classList.toggle('show', v.id==='view-'+n)); document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['overview','detail','input','settings','promo'][i]===n)); if(n==='detail')renderD(); }
+function setDate(d){ curDate=d; renderOv(); }
+function setSyncStatus(s,t){ const d=document.getElementById('status-dot'); d.className='dot '+s; document.getElementById('status-text').textContent=t; }
+function showMsg(id,t,type){ const el=document.getElementById(id); el.textContent=t; el.className='msg '+type; el.style.display='block'; setTimeout(()=>el.style.display='none',5000); }
+function allDates(){ return [...new Set(Object.values(db).map(r=>r.date))].sort().reverse(); }
+function clearAll(){ if(confirm('確定清除暫存？')) { db={}; saveDB(); renderOv(); } }
+window.onload=()=>{ renderOv(); loadFromSheets(); };
 </script>
 </body>
 </html>
